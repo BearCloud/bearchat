@@ -47,8 +47,9 @@ func SendEmail(recipient string, subject string, templatePath string, data map[s
 	response, err := sendgridClient.Send(message)
 	if err != nil {
 		return err
-	} else {
-		log.Println(response.StatusCode)
 	}
+
+	log.Println(response.StatusCode)
+
 	return nil
 }

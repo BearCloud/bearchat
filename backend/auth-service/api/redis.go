@@ -7,6 +7,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+//RevokedItem tracks revoked token data
 type RevokedItem struct {
 	InvalidIssuedAt   int64  // unix timestamp of when Invalid was issued
 	Invalid           bool   // used to invalidate all refreshTokens before InvalidIssuedAt
@@ -14,6 +15,7 @@ type RevokedItem struct {
 	NewClaims         string // used to update all accessTokens before NewClaimsIssuedAt
 }
 
+//RevokedItemExpiry returns if a claim is expired/revoked
 func RevokedItemExpiry(val RevokedItem) int64 {
 	var invalidExpiry, claimsExpiry int64
 	if val.Invalid != false {
@@ -27,9 +29,8 @@ func RevokedItemExpiry(val RevokedItem) int64 {
 	// Return the maximum of invalid and claims expiry.
 	if claimsExpiry < invalidExpiry {
 		return invalidExpiry
-	} else {
-		return claimsExpiry
 	}
+	return claimsExpiry
 }
 
 // Declare a pool variable to hold the pool of Redis connections.
