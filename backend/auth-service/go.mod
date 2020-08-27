@@ -1,4 +1,4 @@
-module github.com/BearCloud/fa20-project-dev
+module github.com/BearCloud/fa20-project-dev/backend/auth-service
 
 go 1.15
 

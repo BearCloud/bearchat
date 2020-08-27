@@ -6,7 +6,7 @@ import (
 	"net/http"
 	_ "net/http"
 
-	"github.com/BearCloud/fa20-project-dev/backend/auth-service/api"
+	"github.com/BearCloud/fa20-project-dev/"
 	"github.com/gorilla/mux"
 )
 
@@ -20,6 +20,6 @@ func main() {
 		log.Fatal("Error registering API endpoints")
 	}
 
-	http.ListenAndServe(":8080", router)
+	http.ListenAndServe(":8081", router)
 
 }
