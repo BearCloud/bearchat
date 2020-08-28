@@ -20,9 +20,9 @@ const (
 
 // RegisterRoutes initializes the api endpoints and maps the requests to specific functions
 func RegisterRoutes(router *mux.Router) error {
-	router.HandleFunc("/api/signup", signup).Methods(http.MethodPost)
-	router.HandleFunc("/api/signin", signin).Methods(http.MethodPost)
-	router.HandleFunc("/api/logout", logout).Methods(http.MethodPost)
+	router.HandleFunc("/api/auth/signup", signup).Methods(http.MethodPost)
+	router.HandleFunc("/api/auth/signin", signin).Methods(http.MethodPost)
+	router.HandleFunc("/api/auth/logout", logout).Methods(http.MethodPost)
 
 	return nil
 }

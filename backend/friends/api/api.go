@@ -13,6 +13,7 @@ import (
 func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/friends/{uuid}", areFriends).Methods(http.MethodPost)
 	router.HandleFunc("/api/friends/{uuid}/mutual", mutualFriends).Methods(http.MethodPost)
+  router.HandleFunc("/api/friends/get", getFriends).Methods(http.MethodPost)
 
 	return nil
 }
