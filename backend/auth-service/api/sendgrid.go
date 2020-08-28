@@ -14,7 +14,7 @@ import (
 var (
 	sendgridKey    string
 	sendgridClient *sendgrid.Client
-	defaultSender  = mail.NewEmail("CalChat", "noreply@projectbot.arifulrigan.com")
+	defaultSender  = mail.NewEmail("CalChat", "noreply@calchat.com")
 	defaultAPI     = ""
 	defaultScheme  = "http"
 )
