@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -37,6 +38,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		return
 	}
+	fmt.Println("credentials: ", credentials)
 
 	//check if the email exists
 	var exists bool
