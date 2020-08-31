@@ -12,14 +12,15 @@ import (
 
 var db *sql.DB
 
-func init() {
+//InitDB creates the MySQL database connection
+func InitDB() {
 
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	db, err := sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/test")
+	db, err := sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/auth")
 
 	if err != nil {
 		panic(err.Error())

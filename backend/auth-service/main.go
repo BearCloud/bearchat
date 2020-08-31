@@ -12,6 +12,9 @@ import (
 
 func main() {
 
+	//Initialize our database connection
+	api.InitDB()
+
 	// Create a new mux for routing api calls
 	router := mux.NewRouter()
 
