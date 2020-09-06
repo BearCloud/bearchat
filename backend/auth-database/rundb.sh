@@ -1,1 +1,1 @@
-docker run --name=auth-db --env="MYSQL_ROOT_PASSWORD=test" auth-db
+docker run -e MYSQL_ROOT_HOST=% -p 3306:3306 auth-db

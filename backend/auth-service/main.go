@@ -13,16 +13,23 @@ import (
 func main() {
 
 	//Initialize our database connection
-	api.InitDB()
+	DB := api.InitDB()
+	defer DB.Close()
 
+	//ping the database to make sure it's up
+	err := DB.Ping()
+	if err != nil {
+		panic(err.Error())
+	}
 	// Create a new mux for routing api calls
 	router := mux.NewRouter()
 
-	err := api.RegisterRoutes(router)
+	err = api.RegisterRoutes(router)
 	if err != nil {
 		log.Fatal("Error registering API endpoints")
 	}
 
+	log.Println("starting go server")
 	http.ListenAndServe(":80", router)
 
 }

@@ -11,14 +11,6 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-var (
-	sendgridKey    string
-	sendgridClient *sendgrid.Client
-	defaultSender  = mail.NewEmail("CalChat", "noreply@calchat.com")
-	defaultAPI     = ""
-	defaultScheme  = "http"
-)
-
 func init() {
 	// initialize environmental variables
 	err := godotenv.Load()

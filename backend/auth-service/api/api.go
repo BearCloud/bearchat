@@ -4,19 +4,31 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	sendgridKey    string
+	sendgridClient *sendgrid.Client
+	defaultSender  = mail.NewEmail("CloudComputing Decal", "noreply@calcloud.org")
+	defaultScheme  = "http"
+)
+
 const (
-	tokenSize = 8
+	jwtTokenSize    = 128
+	verifyTokenSize = 6
+	resetTokenSize  = 6
 )
 
 // RegisterRoutes initializes the api endpoints and maps the requests to specific functions
@@ -24,7 +36,14 @@ func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/auth/signup", signup).Methods(http.MethodPost)
 	router.HandleFunc("/api/auth/signin", signin).Methods(http.MethodPost)
 	router.HandleFunc("/api/auth/logout", logout).Methods(http.MethodPost)
+	// Load sendgrid credentials
+	err := godotenv.Load()
+	if err != nil {
+		return err
+	}
 
+	sendgridKey = os.Getenv("SENDGRID_KEY")
+	sendgridClient = sendgrid.NewSendClient(sendgridKey)
 	return nil
 }
 
@@ -38,11 +57,10 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		return
 	}
-	fmt.Println("credentials: ", credentials)
 
 	//check if the email exists
 	var exists bool
-	err = db.QueryRow("SELECT EXISTS (SELECT email FROM users WHERE email = ?)").Scan(&exists)
+	err = DB.QueryRow("SELECT EXISTS (SELECT email FROM users WHERE email = ?)", credentials.Email).Scan(&exists)
 	if err != nil {
 		http.Error(w, errors.New("error checking if email exists").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -65,10 +83,10 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	userID := uuid.New().String()
 
 	//Create new verification token
-	verificationToken := GetRandomBase62(tokenSize)
+	verificationToken := GetRandomBase62(jwtTokenSize)
 
 	//Store credentials in database
-	_, err = db.Query("INSERT INTO users(email, hashedPassword, verified, resetToken, userId, verifiedToken) VALUES (?, ?, FALSE, NULL, ?, ?)", credentials.Email, string(hashedPassword), userID, verificationToken)
+	_, err = DB.Query("INSERT INTO users(email, hashedPassword, verified, resetToken, userId, verifiedToken) VALUES (?, ?, FALSE, NULL, ?, ?)", credentials.Email, string(hashedPassword), userID, verificationToken)
 	if err != nil {
 		http.Error(w, errors.New("error storing credentials into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -147,7 +165,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 
 	var hashedPassword, userID string
 	var verified bool
-	err = db.QueryRow("select hashedPassword, userId, verified from users where email=?", credentials.Email).Scan(&hashedPassword, &userID, &verified)
+	err = DB.QueryRow("select hashedPassword, userId, verified from users where email=?", credentials.Email).Scan(&hashedPassword, &userID, &verified)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, errors.New("this email is not associated with an account").Error(), http.StatusNotFound)
