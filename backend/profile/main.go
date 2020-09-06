@@ -20,5 +20,5 @@ func main() {
 		log.Fatal("Error registering API endpoints")
 	}
 
-	http.ListenAndServe(":8081", router)
+	http.ListenAndServe(":8080", router)
 }
