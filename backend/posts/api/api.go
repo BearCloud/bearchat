@@ -11,7 +11,10 @@ import (
 )
 
 func RegisterRoutes(router *mux.Router) error {
+	router.HandleFunc("/api/posts", getFeed).Methods(http.MethodGet)
 	router.HandleFunc("/api/posts/{uuid}", getPosts).Methods(http.MethodGet)
+	router.HandleFunc("/api/posts", createPost).Methods(http.MethodPost)
+	router.HandleFunc("/api/posts/{postID}", deletePost).Methods(http.MethodDelete)
 
 	return nil
 }
