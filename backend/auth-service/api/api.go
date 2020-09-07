@@ -14,15 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	sendgridKey    string
-	sendgridClient *sendgrid.Client
-	defaultSender  = mail.NewEmail("CloudComputing Decal", "noreply@calcloud.org")
-	defaultScheme  = "http"
 )
 
 const (
@@ -79,7 +71,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Create a new user UUID
+	//Create a new user UUID and convert it to string
 	userID := uuid.New().String()
 
 	//Create new verification token
