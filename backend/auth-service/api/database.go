@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/joho/godotenv"
 
@@ -10,20 +9,28 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
+//DB represents the connection to the MySQL database
+var (
+	DB *sql.DB
+)
 
-func init() {
+//InitDB creates the MySQL database connection
+func InitDB() *sql.DB {
 
 	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	db, err := sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/test")
-
 	if err != nil {
 		panic(err.Error())
 	}
 
-	defer db.Close()
+	DB, err = sql.Open("mysql", "root:root@/auth")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = DB.Ping()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return DB
 }
