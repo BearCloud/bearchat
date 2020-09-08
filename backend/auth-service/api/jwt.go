@@ -19,9 +19,7 @@ var (
 
 //AuthClaims represents the claims in the access token
 type AuthClaims struct {
-	Email         string
-	EmailVerified bool
-	UserID        string
+	UserID string
 	jwt.StandardClaims
 }
 
