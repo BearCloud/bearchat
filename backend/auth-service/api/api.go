@@ -102,9 +102,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	var accessExpiresAt = time.Now().Add(DefaultAccessJWTExpiry)
 	var accessToken string
 	accessToken, err = setClaims(AuthClaims{
-		Email:         credentials.Email,
-		EmailVerified: false,
-		UserID:        userID,
+		UserID: userID,
 		StandardClaims: jwt.StandardClaims{
 			Subject:   "access",
 			ExpiresAt: accessExpiresAt.Unix(),
