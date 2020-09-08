@@ -28,6 +28,7 @@ func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/auth/signup", signup).Methods(http.MethodPost)
 	router.HandleFunc("/api/auth/signin", signin).Methods(http.MethodPost)
 	router.HandleFunc("/api/auth/logout", logout).Methods(http.MethodPost)
+	router.HandleFunc("/api/auth/verify", verify).Methods(http.MethodPost)
 	// Load sendgrid credentials
 	err := godotenv.Load()
 	if err != nil {
@@ -50,8 +51,19 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//check if the email exists
 	var exists bool
+	//check if the email or username exists
+	err = DB.QueryRow("SELECT EXISTS (SELECT email FROM users WHERE username = ?)", credentials.Username).Scan(&exists)
+	if err != nil {
+		http.Error(w, errors.New("error checking if username exists").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+	if exists == true {
+		http.Error(w, errors.New("this username is taken").Error(), http.StatusConflict)
+		return
+	}
+
 	err = DB.QueryRow("SELECT EXISTS (SELECT email FROM users WHERE email = ?)", credentials.Email).Scan(&exists)
 	if err != nil {
 		http.Error(w, errors.New("error checking if email exists").Error(), http.StatusInternalServerError)
@@ -78,7 +90,8 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	verificationToken := GetRandomBase62(jwtTokenSize)
 
 	//Store credentials in database
-	_, err = DB.Query("INSERT INTO users(email, hashedPassword, verified, resetToken, userId, verifiedToken) VALUES (?, ?, FALSE, NULL, ?, ?)", credentials.Email, string(hashedPassword), userID, verificationToken)
+	_, err = DB.Query("INSERT INTO users(username, email, hashedPassword, verified, resetToken, userId, verifiedToken) VALUES (?, ?, ?, FALSE, NULL, ?, ?)",
+		credentials.Username, credentials.Email, string(hashedPassword), userID, verificationToken)
 	if err != nil {
 		http.Error(w, errors.New("error storing credentials into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -157,7 +170,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 
 	var hashedPassword, userID string
 	var verified bool
-	err = DB.QueryRow("select hashedPassword, userId, verified from users where email=?", credentials.Email).Scan(&hashedPassword, &userID, &verified)
+	err = DB.QueryRow("select hashedPassword, userId, verified from users where username=?", credentials.Username).Scan(&hashedPassword, &userID, &verified)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, errors.New("this email is not associated with an account").Error(), http.StatusNotFound)
@@ -179,9 +192,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 	var accessExpiresAt = time.Now().Add(DefaultAccessJWTExpiry)
 	var accessToken string
 	accessToken, err = setClaims(AuthClaims{
-		Email:         credentials.Email,
-		EmailVerified: verified,
-		UserID:        userID,
+		UserID: userID,
 		StandardClaims: jwt.StandardClaims{
 			Subject:   "access",
 			ExpiresAt: accessExpiresAt.Unix(),
@@ -231,5 +242,23 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	var expiresAt = time.Now().Add(-1 * time.Minute)
 	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "", Expires: expiresAt})
 	http.SetCookie(w, &http.Cookie{Name: "refresh_token", Value: "", Expires: expiresAt})
+	return
+}
+
+func verify(w http.ResponseWriter, r *http.Request) {
+	token, ok := r.URL.Query()["token"]
+
+	if !ok || len(token[0]) < 1 {
+		http.Error(w, errors.New("Url Param 'token' is missing").Error(), http.StatusInternalServerError)
+		log.Print(errors.New("Url Param 'token' is missing").Error())
+		return
+	}
+
+	_, err := DB.Query("UPDATE users SET verified=1 WHERE verifiedToken = ?", token[0])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Print(err.Error())
+	}
+
 	return
 }
