@@ -29,6 +29,8 @@ func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/auth/signin", signin).Methods(http.MethodPost)
 	router.HandleFunc("/api/auth/logout", logout).Methods(http.MethodPost)
 	router.HandleFunc("/api/auth/verify", verify).Methods(http.MethodPost)
+	router.HandleFunc("/api/auth/sendreset", sendReset).Methods(http.MethodPost)
+	router.HandleFunc("/api/auth/resetpw", resetPassword).Methods(http.MethodPost)
 	// Load sendgrid credentials
 	err := godotenv.Load()
 	if err != nil {
@@ -260,3 +262,53 @@ func verify(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
+
+
+func sendReset(w http.ResponseWriter, r *http.Request) {
+
+	//email from body
+	credentials := Credentials{}
+	err := json.NewDecoder(r.Body).Decode(&credentials)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+	if credentials.Email == "" {
+		http.Error(w, errors.New("Email field is empty").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+
+	//generate reset token
+	token := GetRandomBase62(resetTokenSize)
+
+	//insert reset token into user database
+	_, err = DB.Query("UPDATE users SET resetToken=? WHERE email = ?", token, credentials.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Print(err.Error())
+	}
+
+	// Send verification email
+	err = SendEmail(credentials.Email, "BearChat Password Reset", "password-reset.html", map[string]interface{}{"Token": token})
+	if err != nil {
+		http.Error(w, errors.New("error sending verification email").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+
+	return
+}
+
+func resetPassword(w http.ResponseWriter, r *http.Request) {
+
+	//get token from query params
+
+	//get the username, email, and password from the body
+
+	//hash password
+
+	//put the user in the redis cache to invalidate all current sessions
+}
+
