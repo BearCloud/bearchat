@@ -254,7 +254,7 @@ func verify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := DB.Query("UPDATE users SET verified=1 WHERE verifiedToken = ?", token[0])
+	_, err := DB.Exec("UPDATE users SET verified=1 WHERE verifiedToken = ?", token[0])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Print(err.Error())
@@ -304,11 +304,59 @@ func sendReset(w http.ResponseWriter, r *http.Request) {
 func resetPassword(w http.ResponseWriter, r *http.Request) {
 
 	//get token from query params
+	token := r.URL.Query().Get("token")
 
 	//get the username, email, and password from the body
+	credentials := Credentials{}
+	err := json.NewDecoder(r.Body).Decode(&credentials)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+	if credentials.Email == "" || credentials.Password == "" || credentials.Username == "" {
+		http.Error(w, errors.New("Incorrect Credential Format").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+
+	email := credentials.Email;
+	username := credentials.Username;
+	password := credentials.Password
+
+
+	var exists bool
+	//check if the token exists under the specified username
+	err = DB.QueryRow("SELECT EXISTS (SELECT email FROM users WHERE username = ? AND resetToken=?)", username, token).Scan(&exists)
+	if err != nil {
+		http.Error(w, errors.New("error checking if token exists").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+	if exists == false {
+		http.Error(w, errors.New("token doesnt exist").Error(), http.StatusConflict)
+		return
+	}
+
 
 	//hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, errors.New("error hashing password").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+
+	//input new password and clear the reset token
+	_, err = DB.Exec("UPDATE users SET hashedPassword=?, resetToken=\"\" WHERE username=? and email=?", hashedPassword, username, email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Print(err.Error())
+	}
 
 	//put the user in the redis cache to invalidate all current sessions
+
+
+	return
 }
 
