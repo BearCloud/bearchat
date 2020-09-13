@@ -3,20 +3,22 @@ package api
 import (
 	"bytes"
 	"html/template"
-	"log"
 	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-func init() {
-	// initialize environmental variables
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+var (
+	sendgridKey    string
+	sendgridClient *sendgrid.Client
+	defaultSender  = mail.NewEmail("CloudComputing Decal", "noreply@calcloud.org")
+	defaultScheme  = "http"
+)
+
+//InitMailer initalizes the sendgrid client
+func InitMailer() {
+	// load environmental variables
 	sendgridKey = os.Getenv("SENDGRID_KEY")
 	sendgridClient = sendgrid.NewSendClient(sendgridKey)
 }
@@ -29,19 +31,23 @@ func SendEmail(recipient string, subject string, templatePath string, data map[s
 	if err != nil {
 		return err
 	}
-	tmpl.Execute(&html, data)
-
-	recipientEmail := mail.NewEmail("recipient", recipient)
-	plainTextContent := html.String()
-
-	// Construct and send email via Sendgrid.
-	message := mail.NewSingleEmail(defaultSender, subject, recipientEmail, plainTextContent, html.String())
-	response, err := sendgridClient.Send(message)
+	err = tmpl.Execute(&html, data)
 	if err != nil {
 		return err
 	}
 
-	log.Println(response.StatusCode)
+	//turn our html page buffer into a string
+	plainTextContent := html.String()
+
+	recipientEmail := mail.NewEmail("recipient", recipient)
+
+	// Construct and send email via Sendgrid.
+	message := mail.NewSingleEmail(defaultSender, subject, recipientEmail, plainTextContent, html.String())
+
+	_, err = sendgridClient.Send(message)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

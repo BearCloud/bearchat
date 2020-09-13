@@ -8,16 +8,26 @@ import (
 
 	"github.com/BearCloud/fa20-project-dev/backend/auth-service/api"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	//load our environment variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	//Initialize the sendgrid client
+	api.InitMailer()
 
 	//Initialize our database connection
 	DB := api.InitDB()
 	defer DB.Close()
 
 	//ping the database to make sure it's up
-	err := DB.Ping()
+	err = DB.Ping()
 	if err != nil {
 		panic(err.Error())
 	}
