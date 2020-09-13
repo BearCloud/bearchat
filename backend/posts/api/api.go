@@ -20,6 +20,11 @@ func RegisterRoutes(router *mux.Router) error {
 }
 
 func checkAuth (r *http.Request, uuid string) (auth bool, err Error) {
+	userID, err := getUUID(r)
+	return (uuid == userID), err
+}
+
+func getUUID (r *http.Request) (uuid string, err Error) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -30,7 +35,7 @@ func checkAuth (r *http.Request, uuid string) (auth bool, err Error) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
 	}
-	return (uuid == claim.UserID), err
+	return claim.UserID, err
 }
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +52,7 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	else {
-		posts, err := db.Query("SELECT * FROM posts WHERE uuid = ? ORDER BY postTime", uuid)
+		posts, err := DB.Query("SELECT * FROM posts WHERE uuid = ? ORDER BY postTime", uuid)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
@@ -78,9 +83,23 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-	}
 	//to add later - more data if friends
 
   //encode fetched data as json and serve to client
   json.NewEncoder(w).Encode(postsArray)
+}
+
+func createPost(w http.ResponseWriter, r *http.Request) {
+	post := Post{}
+	json.NewEncoder(w).Decode(&post)
+	uuid, err := GetUUID(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		log.Print(err.Error())
+	}
+	_, err := DB.query("INSERT INTO posts(content, uuid, privacy, postTime) VALUES (?, ?, ?, ?)", post.Content, uuid, post.PrivacyLevel, post.PostTime)
+	if err != nil {
+		http.Error(w, errors.New("error storing post into database").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+	}
 }

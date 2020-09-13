@@ -44,12 +44,11 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 		first string
 		last string
 		email string
-		dob string
 		uuid string
 	)
 	var profile Profile
 	if !auth {
-		err := db.QueryRow("SELECT Firstname, Lastname FROM profiles WHERE uuid = ?", uuid).Scan(&first, &last)
+		err := DB.QueryRow("SELECT Firstname, Lastname FROM users WHERE uuid = ?", uuid).Scan(&first, &last)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
@@ -57,12 +56,12 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 		profile = Profile{first, last, NULL, NULL, NULL}
 	}
 	else {
-		err := db.QueryRow("SELECT * FROM profiles WHERE uuid = ?", uuid).Scan(&first, &last, &email, &dob, &uuid)
+		err := DB.QueryRow("SELECT * FROM users WHERE uuid = ?", uuid).Scan(&first, &last, &email, &uuid)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		profile = Profile{first, last, email, dob, uuid}
+		profile = Profile{first, last, email, uuid}
 	}
 	//to add later - more data if friends
 
@@ -85,7 +84,7 @@ func editProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	//check for duplicate
 	var created bool
-	err = db.QueryRow("SELECT EXISTS (SELECT UUID FROM profiles WHERE UUID = ?)", uuid).Scan(&created)
+	err = DB.QueryRow("SELECT EXISTS (SELECT UUID FROM users WHERE UUID = ?)", uuid).Scan(&created)
 	//store new profile data if auth correct
 		profile := Profile{}
 		err := json.NewDecoder(r.Body).Decode(&profile)
@@ -94,15 +93,9 @@ func editProfile(w http.ResponseWriter, r *http.Request) {
 			log.Print(err.Error())
 			return
 		}
-		if created {
-			_, err = db.Query("REPLACE INTO profiles(Firstname, Lastname, Email, DOB, UUID) VALUES (?, ?, ?, ?, ?)", profile.Firstname, profile.Lastname, profile.Email, profile.DOB, profile.UUID)
-		}
-		else {
-			_, err = db.Query("INSERT INTO profiles(Firstname, Lastname, Email, DOB, UUID) VALUES (?, ?, ?, ?, ?)", profile.Firstname, profile.Lastname, profile.Email, profile.DOB, profile.UUID)
-		}
+			_, err = DB.Query("REPLACE INTO users(Firstname, Lastname, Email, UUID) VALUES (?, ?, ?, ?)", profile.Firstname, profile.Lastname, profile.Email, profile.UUID)
 		if err != nil {
 			http.Error(w, errors.New("error storing profile into database").Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
-			return
 		}
 }

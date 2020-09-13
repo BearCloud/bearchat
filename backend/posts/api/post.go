@@ -13,8 +13,8 @@ const(
 )
 
 type Post struct {
-  Content string 'json:"Content"'
-  UUID string 'json:"UUID"'
-  PrivacyLevel Privacy 'json:"PrivacyLevel"'
-  PostTime Time 'json:"PostTime"'
+  Content string 'json:"content"'
+  UUID string 'json:"uuid"'
+  PrivacyLevel Privacy 'json:"privacyLevel"'
+  PostTime Time 'json:"postTime"'
 }

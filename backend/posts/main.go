@@ -11,7 +11,15 @@ import (
 )
 
 func main() {
+	//init db
+	DB := api.InitDB()
+	defer DB.Close()
 
+	//ping the database to make sure it's up
+	err := DB.Ping()
+	if err != nil {
+		panic(err.Error())
+	}
 	// Create a new mux for routing api calls
 	router := mux.NewRouter()
 

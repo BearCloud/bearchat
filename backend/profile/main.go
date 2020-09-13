@@ -6,13 +6,21 @@ import (
 	"net/http"
 	_ "net/http"
 
-	"github.com/BearCloud/fa20-project-dev/"
+	"github.com/BearCloud/fa20-project-dev/profile/api"
 	"github.com/gorilla/mux"
 )
 
 func main() {
+	//init db
+	DB := api.InitDB()
+	defer DB.Close()
 
-	// Create a new mux for routing api calls
+	//ping the database to make sure it's up
+	err := DB.Ping()
+	if err != nil {
+		panic(err.Error())
+	}
+	//Create a new mux for routing api calls
 	router := mux.NewRouter()
 
 	err := api.RegisterRoutes(router)
