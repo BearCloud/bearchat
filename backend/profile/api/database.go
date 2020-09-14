@@ -19,7 +19,7 @@ func InitDB() {
 		log.Fatal(err.Error())
 	}
 
-	DB, err := sql.Open("mysql", "root:root@/profiles")
+	DB, err = sql.Open("mysql", "root:root@/profiles")
 
 	if err != nil {
 		panic(err.Error())

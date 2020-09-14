@@ -19,7 +19,7 @@ func InitDB() {
 		log.Fatal(err.Error())
 	}
 
-	DB, err := sql.Open("mysql", "root:root@/postsDB?parseTime=true")
+	DB, err = sql.Open("mysql", "root:root@/postsDB?parseTime=true")
 
 	if err != nil {
 		panic(err.Error())
