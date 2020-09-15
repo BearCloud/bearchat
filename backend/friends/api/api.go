@@ -12,6 +12,7 @@ func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/friends/{uuid}", deleteFriend).Methods(http.MethodDelete)
 	router.HandleFunc("/api/friends/{uuid}/mutual", mutualFriends).Methods(http.MethodGet)
 	router.HandleFunc("/api/friends", getFriends).Methods(http.MethodGet)
+	router.HandleFunc("/api/friends", addUser).Methods(http.MethodPost)
 
 	return nil
 }
@@ -30,6 +31,15 @@ func getUUID (r *http.Request) (uuid string, err Error) {
 	return claim.UserID, err
 }
 
+func addUser (w http.ResponseWriter, r *http.Request) {
+	uuid := getUUID(r)
+	_, err := gremlin.Query('g.addV().property('uuid', userID)').Bindings(gremlin.Bind{"userID": uuid).Exec()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+	}
+}
+
 func areFriends(w http.ResponseWriter, r *http.Request) {
 	otherUUID := mux.Vars(r)["uuid"]
 	uuid := getUUID(r)
@@ -39,9 +49,7 @@ func areFriends(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		return
 	}
-	num := 0
-	json.NewDecoder(isFriend).Decode(&num)
-	json.NewEncoder(w).Encode(num)
+	json.NewEncoder(w).Encode((isFriend != 0))
 }
 
 func addFriend(w http.ResponseWriter, r *http.Request) {
