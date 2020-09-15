@@ -4,7 +4,7 @@ USE postsDB;
 
 CREATE TABLE posts (
     content VARCHAR(255),
-    postID VARCHAR(128) PRIMARY KEY,
-    uuid VARCHAR(128),
+    postID VARCHAR(36) PRIMARY KEY,
+    authorID VARCHAR(36),
     postTime DATETIME
 );
