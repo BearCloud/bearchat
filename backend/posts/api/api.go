@@ -8,72 +8,20 @@ import (
 	"time"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"database/sql"
 )
 
 
 func RegisterRoutes(router *mux.Router) error {
-	// router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet)
-	// router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet)
+	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet)
+	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet)
 	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost)
 	router.HandleFunc("/api/posts/{postID}", deletePost).Methods(http.MethodDelete)
 
 	return nil
 }
 
-// func getPosts(w http.ResponseWriter, r *http.Request) {
-
-// 	uuid := mux.Vars(r)["uuid"]
-// 	startIndex := mux.Vars(r)["startIndex"]
-//   //check auth
-// 	auth, err := checkAuth(r, uuid)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusUnauthorized)
-// 		log.Print(err.Error())
-// 	}
-//   //fetch public vs private depending on if user is accessing own profile
-// 	var posts *sql.Rows
-// 	if !auth {
-// 		posts, err = DB.Query("SELECT * FROM posts WHERE uuid = ? AND privacy = 0 ORDER BY postTime OFFSET ? FETCH FIRST 25 ROWS ONLY", uuid, startIndex)
-// 	} else {
-// 		posts, err = DB.Query("SELECT * FROM posts WHERE uuid = ? ORDER BY postTime OFFSET ? FETCH FIRST 25 ROWS ONLY", uuid, startIndex)
-// 	}
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		log.Print(err.Error())
-// 	}
-// 	defer posts.Close()
-// 	postsPointer := posts
-// 	counter := 0
-// 	for postsPointer.Next() {
-// 		counter++
-// 	}
-// 	var (
-// 		content string
-// 		postID string
-// 		privacy bool
-// 		uuid string
-// 		postTime Time
-// 	)
-// 	postsArray := make([]Post, counter)
-// 	for i := 0; i < counter; i++ {
-// 		err = posts.Scan(&content, &postID, &privacy, &uuid, &postTime)
-// 		if err != null {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			log.Print(err.Error())
-// 		}
-// 		postsArray[i] = Post{content, postID, uuid, postTime}
-// 	}
-// 	err = posts.Err()
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		log.Print(err.Error())
-// 	}
-//   //encode fetched data as json and serve to client
-//   json.NewEncoder(w).Encode(postsArray)
-// }
-
-func createPost(w http.ResponseWriter, r *http.Request) {
-	//fetch cookie
+func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -87,17 +35,66 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(claims)
 
-	var post Post
-	json.NewDecoder(r.Body).Decode(&post)
-	userID := claims["UserID"]
+	return claims["UserID"].(string)
+}
 
+func getPosts(w http.ResponseWriter, r *http.Request) {
+
+	uuid := mux.Vars(r)["uuid"]
+	startIndex := mux.Vars(r)["startIndex"]
+  //check auth
+	auth := (getUUID(w, r) == uuid)
+  //fetch public vs private depending on if user is accessing own profile
+	var posts *sql.Rows
+	var err error
+	if !auth {
+		posts, err = DB.Query("SELECT * FROM posts WHERE uuid = ? AND privacy = 0 ORDER BY postTime OFFSET ? FETCH FIRST 25 ROWS ONLY", uuid, startIndex)
+	} else {
+		posts, err = DB.Query("SELECT * FROM posts WHERE uuid = ? ORDER BY postTime OFFSET ? FETCH FIRST 25 ROWS ONLY", uuid, startIndex)
+	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-	postID := uuid.New()
+	defer posts.Close()
+	postsPointer := posts
+	counter := 0
+	for postsPointer.Next() {
+		counter++
+	}
+	var (
+		content string
+		postID string
+		userid string
+		postTime time.Time
+	)
+	postsArray := make([]Post, counter)
+	for i := 0; i < counter; i++ {
+		err = posts.Scan(&content, &postID, &userid, &postTime)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Print(err.Error())
+		}
+		postsArray[i] = Post{content, postID, uuid, postTime}
+	}
+	err = posts.Err()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+	}
+  //encode fetched data as json and serve to client
+  json.NewEncoder(w).Encode(postsArray)
+}
 
-	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.Content, postID, userID, time.Now())
+func createPost(w http.ResponseWriter, r *http.Request) {
+	//fetch uuid
+	userID := getUUID(w, r)
+
+	var post Post
+	json.NewDecoder(r.Body).Decode(&post)
+	postID := uuid.New()
+	pst, err := time.LoadLocation("PST")
+	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.Content, postID, userID, time.Now().In(pst))
 	if err != nil {
 		http.Error(w, errors.New("error storing post into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -107,24 +104,10 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 func deletePost(w http.ResponseWriter, r *http.Request) {
 	postID := mux.Vars(r)["postID"]
 	//fetch cookie
-	cookie, err := r.Cookie("access_token")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Print(err.Error())
-	}
-	//validate the cookie
-	claims, err := ValidateToken(cookie.Value)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		log.Print(err.Error())
-	}
-	log.Println(claims)
-
-	uuid := claims["UserID"]
-
+	uuid := getUUID(w, r)
 	var exists bool
 	//check if post exists
-	err = DB.QueryRow("SELECT EXISTS (SELECT * FROM posts WHERE postID = ?)", postID).Scan(&exists)
+	err := DB.QueryRow("SELECT EXISTS (SELECT * FROM posts WHERE postID = ?)", postID).Scan(&exists)
 	if err != nil {
 		http.Error(w, errors.New("error checking if post exists").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -152,46 +135,42 @@ func deletePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// func getFeed(w http.ResponseWriter, r *http.Request) {
-// 	startIndex := mux.Vars(r)["startIndex"]
-// 	uuid, err := GetUUID(r)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusUnauthorized)
-// 		log.Print(err.Error())
-// 	}
-//   //fetch public vs private depending on if user is accessing own profile
-// 	posts, err := DB.Query("SELECT * FROM posts WHERE uuid <> ? AND privacy = 0 ORDER BY postTime OFFSET ? FETCH FIRST 25 ROWS ONLY", uuid, startIndex)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		log.Print(err.Error())
-// 	}
-// 	defer posts.Close()
-// 	postsPointer := posts
-// 	counter := 0
-// 	for postsPointer.Next() {
-// 		counter++
-// 	}
-// 	var (
-// 		content string
-// 		postID string
-// 		privacy bool
-// 		uuid string
-// 		postTime Time
-// 	)
-// 	postsArray := make([]Post, counter)
-// 	for i := 0; i < counter; i++ {
-// 		err = posts.Scan(&content, &postID, &privacy, &uuid, &postTime)
-// 		if err != null {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			log.Print(err.Error())
-// 		}
-// 		postsArray[i] = Post{content, postID, uuid, postTime}
-// 	}
-// 	err = posts.Err()
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		log.Print(err.Error())
-// 	}
-//   //encode fetched data as json and serve to client
-//   json.NewEncoder(w).Encode(postsArray)
-// }
+func getFeed(w http.ResponseWriter, r *http.Request) {
+	startIndex := mux.Vars(r)["startIndex"]
+	//fetch cookie
+	uuid := getUUID(w, r)
+  //fetch public vs private depending on if user is accessing own profile
+	posts, err := DB.Query("SELECT * FROM posts WHERE uuid <> ? AND privacy = 0 ORDER BY postTime OFFSET ? FETCH FIRST 25 ROWS ONLY", uuid, startIndex)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+	}
+	defer posts.Close()
+	postsPointer := posts
+	counter := 0
+	for postsPointer.Next() {
+		counter++
+	}
+	var (
+		content string
+		postID string
+		userid string
+		postTime time.Time
+	)
+	postsArray := make([]Post, counter)
+	for i := 0; i < counter; i++ {
+		err = posts.Scan(&content, &postID, &userid, &postTime)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Print(err.Error())
+		}
+		postsArray[i] = Post{content, postID, userid, postTime}
+	}
+	err = posts.Err()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+	}
+  //encode fetched data as json and serve to client
+  json.NewEncoder(w).Encode(postsArray)
+}
