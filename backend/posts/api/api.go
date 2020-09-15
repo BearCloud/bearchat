@@ -107,7 +107,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	log.Println(claims)
 
 
-	var post string
+	var post Post
 	json.NewDecoder(r.Body).Decode(&post)
 	userID := claims["UserID"]
 	
@@ -117,7 +117,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	}
 	postID := uuid.New()
 
-	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post, postID, userID, time.Now())
+	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.PostBody, postID, userID, time.Now())
 	if err != nil {
 		http.Error(w, errors.New("error storing post into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
