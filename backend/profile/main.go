@@ -23,7 +23,7 @@ func main() {
 	//Create a new mux for routing api calls
 	router := mux.NewRouter()
 
-	err := api.RegisterRoutes(router)
+	err = api.RegisterRoutes(router)
 	if err != nil {
 		log.Fatal("Error registering API endpoints")
 	}

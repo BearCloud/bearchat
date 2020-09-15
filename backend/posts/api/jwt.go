@@ -17,20 +17,6 @@ type AuthClaims struct {
 	jwt.StandardClaims
 }
 
-func GetClaims(tokenString string) (claims AuthClaims, Error error) {
-	claims = AuthClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
-	if err != nil {
-		return AuthClaims{}, err
-	}
-	if !token.Valid {
-		return AuthClaims{}, errors.New("The given token is not valid")
-	}
-	return claims, nil
-}
-
 func ValidateToken(tokenString string) (jwt.MapClaims, error) {
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -38,11 +24,11 @@ func ValidateToken(tokenString string) (jwt.MapClaims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-	
+
 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 		return jwtKey, nil
 	})
-	
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims, nil
 	} else {
