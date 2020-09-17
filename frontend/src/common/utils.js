@@ -18,6 +18,7 @@ function getUUIDFromToken(token) {
 }
 
 export function request(method, url, qs, body) {
+  const allowedOrigins = ["http://localhost:3000", "http://localhost:80"];
   return new Promise((resolve, reject) => {
     let xhr = new XMLHttpRequest();
     let u = new URL(url);
@@ -25,10 +26,11 @@ export function request(method, url, qs, body) {
       u.searchParams.append(key, value);
     }
     xhr.open(method, u.toString(), true);
-    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Content-Length", body.length);
     xhr.onload = () => {
-      if (xhr.status === 200) {
-        resolve(xhr.response);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(xhr);
       } else {
         reject(xhr.status);
       }

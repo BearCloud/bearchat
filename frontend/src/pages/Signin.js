@@ -42,9 +42,9 @@ function Signin(props) {
 function send(e) {
   e.preventDefault();
   console.log(e);
-  request('POST', 'localhost:80/api/auth/signin', {}, JSON.stringify(state))
-    .then((value) => {
-      console.log("got: " + value)
+  request('POST', 'http://localhost:80/api/auth/signin', {}, JSON.stringify(state))
+    .then((res) => {
+      
     })
     .catch((e) => {
       console.log("err: " + e);
