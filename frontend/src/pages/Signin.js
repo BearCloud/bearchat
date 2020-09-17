@@ -1,11 +1,58 @@
 import React from 'react';
+import { Button, Form } from 'react-bootstrap';
+import { request } from '../common/utils.js'
 
-function Signup(props) {
+let state = {
+  username: '',
+  password: ''
+}
+
+function Signin(props) {  
   return (
     <>
-      Signin placeholder
+      <Form onSubmit={ send }>
+        <Form.Group controlId="formUsername">
+          <Form.Label>Username</Form.Label>
+          <Form.Control 
+            type="text"
+            name="username"
+            placeholder="Username" 
+            onChange={handleChange}
+          />
+          <Form.Text className="text-muted">
+          </Form.Text>
+        </Form.Group>
+        <Form.Group controlId="formPassword">
+          <Form.Label>Password</Form.Label>
+          <Form.Control 
+            type="password" 
+            name="password"
+            placeholder="Password" 
+            onChange={ handleChange }
+          />
+        </Form.Group>
+        <Button variant="primary" type="submit">
+          Sign In
+        </Button>
+      </Form>
     </>
   );
 }
 
-export default Signup;
+function send(e) {
+  e.preventDefault();
+  console.log(e);
+  request('POST', 'localhost:80/api/auth/signin', {}, JSON.stringify(state))
+    .then((value) => {
+      console.log("got: " + value)
+    })
+    .catch((e) => {
+      console.log("err: " + e);
+    });
+}
+
+function handleChange(e) {
+  state[e.target.name] = e.target.value;
+}
+
+export default Signin;
