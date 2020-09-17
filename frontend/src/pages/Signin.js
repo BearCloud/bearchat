@@ -1,13 +1,23 @@
-import React from 'react';
+import React, { useState }  from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { request } from '../common/utils.js'
 
-let state = {
-  username: '',
-  password: ''
-}
-
 function Signin(props) {  
+  
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('' );
+
+  const send = (e) => {
+    e.preventDefault();
+    request('POST', 'http://localhost:80/api/auth/signin', {}, JSON.stringify({ username, password }))
+      .then((res) => {
+        console.log(res.status)
+      })
+      .catch((e) => {
+        console.log("err: " + e);
+      });
+  }
+
   return (
     <>
       <Form onSubmit={ send }>
@@ -17,10 +27,8 @@ function Signin(props) {
             type="text"
             name="username"
             placeholder="Username" 
-            onChange={handleChange}
+            onChange={(e) => setUsername(e.target.value)}
           />
-          <Form.Text className="text-muted">
-          </Form.Text>
         </Form.Group>
         <Form.Group controlId="formPassword">
           <Form.Label>Password</Form.Label>
@@ -28,7 +36,7 @@ function Signin(props) {
             type="password" 
             name="password"
             placeholder="Password" 
-            onChange={ handleChange }
+            onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
         <Button variant="primary" type="submit">
@@ -37,22 +45,6 @@ function Signin(props) {
       </Form>
     </>
   );
-}
-
-function send(e) {
-  e.preventDefault();
-  console.log(e);
-  request('POST', 'http://localhost:80/api/auth/signin', {}, JSON.stringify(state))
-    .then((res) => {
-      
-    })
-    .catch((e) => {
-      console.log("err: " + e);
-    });
-}
-
-function handleChange(e) {
-  state[e.target.name] = e.target.value;
 }
 
 export default Signin;

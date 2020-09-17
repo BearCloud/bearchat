@@ -7,6 +7,7 @@ export function getUsername() {
   let loginToken = cookies.get("access_token");
   let uuid = getUUIDFromToken(loginToken);
   // TODO: convert to username
+  
   return uuid;
 }
 
