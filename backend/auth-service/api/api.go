@@ -26,7 +26,7 @@ const (
 // RegisterRoutes initializes the api endpoints and maps the requests to specific functions
 func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/auth/signup", signup).Methods(http.MethodPost)
-	router.HandleFunc("/api/auth/signin", signin).Methods(http.MethodPost)
+	router.HandleFunc("/api/auth/signin", signin).Methods(http.MethodPost, http.MethodOptions)
 	router.HandleFunc("/api/auth/logout", logout).Methods(http.MethodPost)
 	router.HandleFunc("/api/auth/verify", verify).Methods(http.MethodPost)
 	router.HandleFunc("/api/auth/sendreset", sendReset).Methods(http.MethodPost)
@@ -160,6 +160,14 @@ func signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func signin(w http.ResponseWriter, r *http.Request) {
+  w.Header().Set("Access-Control-Allow-Origin", "*")
+  w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+  w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+  
 	credentials := Credentials{}
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil {
@@ -234,7 +242,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
 	})
-
+  w.WriteHeader(201)
 	return
 }
 
