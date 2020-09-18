@@ -28,17 +28,16 @@ export function request(method, url, qs, body) {
     }
     xhr.open(method, u.toString(), true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Content-Length", body.length);
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(xhr);
       } else {
-        reject(xhr.status);
+        reject(xhr);
       }
     };
     xhr.onerror = () => {
       reject(xhr.status);
-    }
+    };
     xhr.send(body);
   });
 }

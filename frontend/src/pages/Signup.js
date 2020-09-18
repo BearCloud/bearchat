@@ -1,31 +1,43 @@
 import React, { useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
-import { request } from '../common/utils.js'
+import { request } from '../common/utils.js';
+import swal from 'sweetalert';
 
-function Signup(props) {  
+function Signup(props) {
 
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('' );
-  
+
   const send = (e) => {
     e.preventDefault();
-    request('POST', 'http://localhost:80/api/auth/signup', {}, JSON.stringify({ email, username, password }))
+    console.log(email, username, password);
+    request('POST', 'http://localhost:80/api/auth/signup', {}, JSON.stringify({ email: email, username: username, password: password }))
       .then((res) => {
-        console.log(res.status)
+        console.log(res.status);
+        swal({
+          title: "Signed up!",
+          text: "You've successfully signed up. Go ahead and log in!",
+          icon: "success"
+        });
       })
-      .catch((e) => {
-        console.log("err: " + e);
+      .catch((res) => {
+        console.log("err: ", res);
+        swal({
+          title: "Could not sign up!",
+          text: `Error when attempting to sign up (HTTP ${res.status}): ${res.responseText.trim()}.`,
+          icon: "error"
+        });
       });
-  }
+  };
 
   return (
     <>
       <Form onSubmit={ send }>
         <Form.Group controlId="formBasicEmail">
           <Form.Label>Email address</Form.Label>
-          <Form.Control 
-            type="email" 
+          <Form.Control
+            type="email"
             name="email"
             placeholder="Enter email"
             onChange={(e) => setEmail(e.target.value)}
@@ -36,19 +48,19 @@ function Signup(props) {
         </Form.Group>
         <Form.Group controlId="formUsername">
           <Form.Label>Username</Form.Label>
-          <Form.Control 
+          <Form.Control
             type="text"
             name="username"
-            placeholder="Username" 
+            placeholder="Username"
             onChange={(e) => setUsername(e.target.value)}
           />
         </Form.Group>
         <Form.Group controlId="formPassword">
           <Form.Label>Password</Form.Label>
-          <Form.Control 
-            type="password" 
+          <Form.Control
+            type="password"
             name="password"
-            placeholder="Password" 
+            placeholder="Password"
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
