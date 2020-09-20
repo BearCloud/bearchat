@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	_ "log"
 	"net/http"
 	_ "net/http"
 
@@ -11,13 +10,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type rectangle struct{
-	x,y int
-}
-
 func main() {
 
-	//load our environment variables
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -33,6 +27,7 @@ func main() {
 	//ping the database to make sure it's up
 	err = DB.Ping()
 	if err != nil {
+		log.Println("pinging database")
 		panic(err.Error())
 	}
 	// Create a new mux for routing api calls

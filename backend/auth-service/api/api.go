@@ -167,9 +167,9 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	return
 
 	w.WriteHeader(201)
+	return
 
 }
 
