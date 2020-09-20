@@ -115,6 +115,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
 	}
+	
 	postID := uuid.New()
 
 	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.PostBody, postID, userID, time.Now())

@@ -11,6 +11,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type rectangle struct{
+	x,y int
+}
+
 func main() {
 
 	//load our environment variables
