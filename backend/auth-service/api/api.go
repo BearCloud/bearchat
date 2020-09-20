@@ -121,6 +121,9 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Name:    "access_token",
 		Value:   accessToken,
 		Expires: accessExpiresAt,
+		Secure: true,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	// Set refresh token as a cookie.
