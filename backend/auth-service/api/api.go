@@ -132,6 +132,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Secure: true,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
+		Path: "/api",
 	})
 
 	// Set refresh token as a cookie.
