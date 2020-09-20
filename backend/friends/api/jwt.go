@@ -2,8 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
-
 	"github.com/dgrijalva/jwt-go"
 )
 

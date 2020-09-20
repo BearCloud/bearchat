@@ -2,9 +2,7 @@ package api
 
 import (
 	"database/sql"
-	"log"
-
-	"github.com/joho/godotenv"
+	 _ "log"
 
 	//MySQL driver
 	_ "github.com/go-sql-driver/mysql"
@@ -12,18 +10,13 @@ import (
 
 var DB *sql.DB
 
-func InitDB() {
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
+func InitDB() *sql.DB {
+	var err error
 	DB, err = sql.Open("mysql", "root:root@/profiles")
 
 	if err != nil {
 		panic(err.Error())
 	}
 
-	defer DB.Close()
+	return DB
 }

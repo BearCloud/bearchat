@@ -15,30 +15,13 @@ func RegisterRoutes(router *mux.Router) error {
 	// router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet)
 	// router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet)
 	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost)
-	// router.HandleFunc("/api/posts/{postID}", deletePost).Methods(http.MethodDelete)
+	router.HandleFunc("/api/posts/{postID}", deletePost).Methods(http.MethodDelete)
 
 	return nil
 }
 
-func checkAuth (r *http.Request, uuid string) (bool, error) {
-	userID, err := getUUID(r)
-	return (uuid == userID), err
-}
-
-func getUUID (r *http.Request) (uuid string, err error) {
-	cookie, err := r.Cookie("access_token")
-	if err != nil {
-		return "", err
-	}
-	claim, err := GetClaims(cookie.Value)
-	if err != nil {
-		return "", err
-	}
-	return claim.UserID, err
-}
-
 // func getPosts(w http.ResponseWriter, r *http.Request) {
-	  
+
 // 	uuid := mux.Vars(r)["uuid"]
 // 	startIndex := mux.Vars(r)["startIndex"]
 //   //check auth
@@ -90,14 +73,12 @@ func getUUID (r *http.Request) (uuid string, err error) {
 // }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
-
-	//get cookie
+	//fetch cookie
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Print(err.Error())
 	}
-
 	//validate the cookie
 	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
@@ -106,11 +87,10 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(claims)
 
-
 	var post Post
 	json.NewDecoder(r.Body).Decode(&post)
 	userID := claims["UserID"]
-	
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
@@ -118,49 +98,60 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	
 	postID := uuid.New()
 
-	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.PostBody, postID, userID, time.Now())
+	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.Content, postID, userID, time.Now())
 	if err != nil {
 		http.Error(w, errors.New("error storing post into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
 }
 
-// func deletePost(w http.ResponseWriter, r *http.Request) {
-// 	postID := mux.Vars(r)["postID"]
-// 	uuid, err := GetUUID(r)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusUnauthorized)
-// 		log.Print(err.Error())
-// 	}
-// 	var exists bool
-// 	//check if the email or username exists
-// 	err = DB.QueryRow("SELECT EXISTS (SELECT * FROM posts WHERE postID = ?)", postID).Scan(&exists)
-// 	if err != nil {
-// 		http.Error(w, errors.New("error checking if post exists").Error(), http.StatusInternalServerError)
-// 		log.Print(err.Error())
-// 		return
-// 	}
-// 	if !exists {
-// 		http.Error(w, errors.New("this post doesn't exist").Error(), http.StatusNotFound)
-// 		return
-// 	}
-// 	var postUUID string
-// 	_, err = DB.QueryRow("SELECT uuid FROM posts WHERE postID = ?", postID).Scan(&postUUID)
-// 	if err != nil {
-// 		http.Error(w, errors.New("error fetching post to delete from database").Error(), http.StatusInternalServerError)
-// 		log.Print(err.Error())
-// 	}
-// 	if uuid != postUUID {
-// 		http.Error(w, errors.New("You are not authorized to delete this post").Error(), http.StatusUnauthorized)
-// 		return
-// 	}
-// 	err = DB.QueryRow("DELETE FROM posts WHERE postID = ?", postID)
-// 	if err != nil {
-// 		http.Error(w, errors.New("error deleting post").Error(), http.StatusInternalServerError)
-// 		log.Print(err.Error())
-// 		return
-// 	}
-// }
+func deletePost(w http.ResponseWriter, r *http.Request) {
+	postID := mux.Vars(r)["postID"]
+	//fetch cookie
+	cookie, err := r.Cookie("access_token")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Print(err.Error())
+	}
+	//validate the cookie
+	claims, err := ValidateToken(cookie.Value)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		log.Print(err.Error())
+	}
+	log.Println(claims)
+
+	uuid := claims["UserID"]
+
+	var exists bool
+	//check if post exists
+	err = DB.QueryRow("SELECT EXISTS (SELECT * FROM posts WHERE postID = ?)", postID).Scan(&exists)
+	if err != nil {
+		http.Error(w, errors.New("error checking if post exists").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+	if !exists {
+		http.Error(w, errors.New("this post doesn't exist").Error(), http.StatusNotFound)
+		return
+	}
+	var postUUID string
+	err = DB.QueryRow("SELECT uuid FROM posts WHERE postID = ?", postID).Scan(&postUUID)
+	if err != nil {
+		http.Error(w, errors.New("error fetching post to delete from database").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+	}
+	if uuid != postUUID {
+		http.Error(w, errors.New("You are not authorized to delete this post").Error(), http.StatusUnauthorized)
+		return
+	}
+	_, err = DB.Exec("DELETE FROM posts WHERE postID = ?", postID)
+	if err != nil {
+		http.Error(w, errors.New("error deleting post").Error(), http.StatusInternalServerError)
+		log.Print(err.Error())
+		return
+	}
+}
 
 // func getFeed(w http.ResponseWriter, r *http.Request) {
 // 	startIndex := mux.Vars(r)["startIndex"]

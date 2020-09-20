@@ -1,50 +1,43 @@
 package api
 
 import (
-	"fmt",
-	"log",
-	"net/http",
-	"encoding/json",
-	"errors",
-	"database/sql",
+	"log"
+	"net/http"
+	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 )
 
 func RegisterRoutes(router *mux.Router) error {
-	router.HandleFunc("/api/profile/{uuid}", fetchProfile).Methods(http.MethodGet)
+	router.HandleFunc("/api/profile/{uuid}", getProfile).Methods(http.MethodGet)
 	router.HandleFunc("/api/profile/{uuid}", setProfile).Methods(http.MethodPut)
 
 	return nil
 }
 
-func checkAuth (r *http.Request, uuid string) (auth bool, err Error) {
-	cookie, err := r.Cookie("access_token")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		log.Print(err.Error())
-	}
-	claim, err := getClaims(cookie.Value)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		log.Print(err.Error())
-	}
-	return (uuid == claim.UserID), err
-}
-
 func getProfile(w http.ResponseWriter, r *http.Request) {
   uuid := mux.Vars(r)["uuid"]
   //check auth
-	auth, err := checkAuth(r, uuid)
+	//fetch cookie
+	cookie, err := r.Cookie("access_token")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Print(err.Error())
+	}
+	//validate the cookie
+	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
 	}
+	log.Println(claims)
+	auth := (claims["UserID"] == uuid)
   //fetch public vs private depending on if user is accessing own profile
 	var (
 		first string
 		last string
 		email string
-		uuid string
+		userid string
 	)
 	var profile Profile
 	if !auth {
@@ -53,15 +46,14 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		profile = Profile{first, last, NULL, NULL, NULL}
-	}
-	else {
-		err := DB.QueryRow("SELECT * FROM users WHERE uuid = ?", uuid).Scan(&first, &last, &email, &uuid)
+		profile = Profile{first, last, "", ""}
+	} else {
+		err := DB.QueryRow("SELECT * FROM users WHERE uuid = ?", uuid).Scan(&first, &last, &email, &userid)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		profile = Profile{first, last, email, uuid}
+		profile = Profile{first, last, email, userid}
 	}
 	//to add later - more data if friends
 
@@ -69,14 +61,24 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
   json.NewEncoder(w).Encode(profile)
 }
 
-func editProfile(w http.ResponseWriter, r *http.Request) {
+func setProfile(w http.ResponseWriter, r *http.Request) {
 	uuid := mux.Vars(r)["uuid"]
 	//check auth - should also check if profile exists cause token is invalidated when profile deleted
-	auth, err := checkAuth(r, uuid)
+	//fetch cookie
+	cookie, err := r.Cookie("access_token")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Print(err.Error())
+	}
+	//validate the cookie
+	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
 	}
+	log.Println(claims)
+	auth := (claims["UserID"] == uuid)
+
 	if !auth {
 		http.Error(w, errors.New("you are not authorized to edit this profile").Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
@@ -87,7 +89,7 @@ func editProfile(w http.ResponseWriter, r *http.Request) {
 	err = DB.QueryRow("SELECT EXISTS (SELECT UUID FROM users WHERE UUID = ?)", uuid).Scan(&created)
 	//store new profile data if auth correct
 		profile := Profile{}
-		err := json.NewDecoder(r.Body).Decode(&profile)
+		err = json.NewDecoder(r.Body).Decode(&profile)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())

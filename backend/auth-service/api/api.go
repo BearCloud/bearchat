@@ -25,12 +25,13 @@ const (
 
 // RegisterRoutes initializes the api endpoints and maps the requests to specific functions
 func RegisterRoutes(router *mux.Router) error {
-	router.HandleFunc("/api/auth/signup", signup).Methods(http.MethodPost)
-	router.HandleFunc("/api/auth/signin", signin).Methods(http.MethodPost)
-	router.HandleFunc("/api/auth/logout", logout).Methods(http.MethodPost)
-	router.HandleFunc("/api/auth/verify", verify).Methods(http.MethodPost)
-	router.HandleFunc("/api/auth/sendreset", sendReset).Methods(http.MethodPost)
-	router.HandleFunc("/api/auth/resetpw", resetPassword).Methods(http.MethodPost)
+	router.HandleFunc("/api/auth/signup", signup).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/auth/signin", signin).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/auth/logout", logout).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/auth/verify", verify).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/auth/sendreset", sendReset).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/auth/resetpw", resetPassword).Methods(http.MethodPost, http.MethodOptions)
+
 	// Load sendgrid credentials
 	err := godotenv.Load()
 	if err != nil {
@@ -43,6 +44,13 @@ func RegisterRoutes(router *mux.Router) error {
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 
 	//obtain the credentials from the request body
 	credentials := Credentials{}
@@ -163,6 +171,14 @@ func signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func signin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	credentials := Credentials{}
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil {
@@ -237,8 +253,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
 	})
-
-	return
+  w.WriteHeader(200)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
