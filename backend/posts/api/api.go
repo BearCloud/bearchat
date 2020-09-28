@@ -61,8 +61,12 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		postTime time.Time
 	)
 	var postsArray [25]Post
+	counter := 0
 	for i := 0; i < 25; i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
+		if postID != nil {
+			counter++
+		}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
@@ -75,7 +79,7 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
   //encode fetched data as json and serve to client
-  json.NewEncoder(w).Encode(postsArray)
+  json.NewEncoder(w).Encode(postsArray[:counter])
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
@@ -154,8 +158,12 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		postTime time.Time
 	)
 	var postsArray [25]Post
+	counter := 0
 	for i := 0; i < 25; i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
+		if postID != nil {
+			counter++
+		}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
@@ -168,5 +176,5 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
   //encode fetched data as json and serve to client
-  json.NewEncoder(w).Encode(postsArray)
+  json.NewEncoder(w).Encode(postsArray[:counter])
 }
