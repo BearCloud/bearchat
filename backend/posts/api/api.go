@@ -48,7 +48,7 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
   //fetch public vs private depending on if user is accessing own profile
 	var posts *sql.Rows
 	var err error
-	posts, err = DB.Query("SELECT * FROM posts WHERE authorID = ? ORDER BY postTime LIMIT 25, ?", uuid, startIndex)
+	posts, err = DB.Query("SELECT * FROM posts WHERE authorID = ? ORDER BY postTime LIMIT ?, 25", uuid, startIndex)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -146,7 +146,7 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 	//fetch cookie
 	uuid := getUUID(w, r)
   //fetch public vs private depending on if user is accessing own profile
-	posts, err := DB.Query("SELECT * FROM posts WHERE authorID <> ? ORDER BY postTime LIMIT 25, ?", uuid, intStartIndex)
+	posts, err := DB.Query("SELECT * FROM posts WHERE authorID <> ? ORDER BY postTime LIMIT ?, 25", uuid, intStartIndex)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
