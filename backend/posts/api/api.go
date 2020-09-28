@@ -54,19 +54,14 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
 	defer posts.Close()
-	postsPointer := posts
-	counter := 0
-	for postsPointer.Next() {
-		counter++
-	}
 	var (
 		content string
 		postID string
 		userid string
 		postTime time.Time
 	)
-	postsArray := make([]Post, counter)
-	for i := 0; i < counter; i++ {
+	var postsArray [25]Post
+	for i := 0; i < 25; i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -152,19 +147,14 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
 	defer posts.Close()
-	postsPointer := posts
-	counter := 0
-	for postsPointer.Next() {
-		counter++
-	}
 	var (
 		content string
 		postID string
 		userid string
 		postTime time.Time
 	)
-	postsArray := make([]Post, counter)
-	for i := 0; i < counter; i++ {
+	var postsArray [25]Post
+	for i := 0; i < 25; i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
