@@ -67,9 +67,6 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 	postsArray := make([]Post, 25)
 	for i := 0; i < 25 && posts.Next(); i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
-		if postID != nil {
-			counter++
-		}
 		if err != nil {
 			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
@@ -167,9 +164,6 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 	postsArray := make([]Post, 25)
 	for i := 0; i < 25 && posts.Next(); i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
-		if postID != nil {
-			counter++
-		}
 		if err != nil {
 			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
