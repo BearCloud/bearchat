@@ -54,15 +54,15 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
 	defer posts.Close()
-	var (
-		content string
-		postID string
-		userid string
-		postTime time.Time
-	)
 	var postsArray [25]Post
 	counter := 0
 	for i := 0; i < 25; i++ {
+		var (
+			content string
+			postID string
+			userid string
+			postTime time.Time
+		)
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if postID != nil {
 			counter++
@@ -151,15 +151,15 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
 	defer posts.Close()
-	var (
-		content string
-		postID string
-		userid string
-		postTime time.Time
-	)
 	var postsArray [25]Post
 	counter := 0
 	for i := 0; i < 25; i++ {
+		var (
+			content string
+			postID string
+			userid string
+			postTime time.Time
+		)
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if postID != nil {
 			counter++
