@@ -85,12 +85,8 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
   //encode fetched data as json and serve to client
-<<<<<<< HEAD
   json.NewEncoder(w).Encode(postsArray[:numPosts])
   return;
-=======
-  json.NewEncoder(w).Encode(postsArray[:counter])
->>>>>>> c0eecefef0b48ad3df46cbd5d7778ef036252283
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
