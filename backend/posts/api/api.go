@@ -170,7 +170,7 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		}
 		postsArray[i] = Post{content, postID, userid, postTime}
 		numPosts++
-	}	
+	}
 
 	err = posts.Err()
 	if err != nil {
