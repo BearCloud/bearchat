@@ -121,6 +121,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Name:    "access_token",
 		Value:   accessToken,
 		Expires: accessExpiresAt,
+		Path: "/api",
 	})
 
 	// Set refresh token as a cookie.
@@ -145,6 +146,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Name:    "refresh_token",
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
+		Path: "/api",
 	})
 
 	// Send verification email
@@ -209,6 +211,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Name:    "access_token",
 		Value:   accessToken,
 		Expires: accessExpiresAt,
+		Path: "/api",
 	})
 
 	// Set refresh token as a cookie.
@@ -233,6 +236,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Name:    "refresh_token",
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
+		Path: "/api",
 	})
 
 	return

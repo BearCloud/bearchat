@@ -8,6 +8,6 @@ RUN go mod download
 
 RUN go build -o main .
 
-EXPOSE 80
+EXPOSE 81
 
 ENTRYPOINT [ "./main" ]
