@@ -43,9 +43,13 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 
 	uuid := mux.Vars(r)["uuid"]
 	startIndex := mux.Vars(r)["startIndex"]
-  //check auth
-	auth := (getUUID(w, r) == uuid)
-  //fetch public vs private depending on if user is accessing own profile
+  	//check auth
+	isAuthorized := (getUUID(w, r) == uuid)
+	if !isAuthorized {
+		http.Error(w, errors.New("Not authorized to get posts").Error(), http.StatusUnauthorized)
+		return;
+	}
+  	//fetch public vs private depending on if user is accessing own profile
 	var posts *sql.Rows
 	var err error
 	posts, err = DB.Query("SELECT * FROM posts WHERE authorID = ? ORDER BY postTime LIMIT ?, 25", uuid, startIndex)
@@ -53,34 +57,33 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-	defer posts.Close()
-	postsPointer := posts
-	counter := 0
-	for postsPointer.Next() {
-		counter++
-	}
 	var (
 		content string
 		postID string
 		userid string
 		postTime time.Time
 	)
-	postsArray := make([]Post, counter)
-	for i := 0; i < counter; i++ {
+	numPosts := 0
+	postsArray := make([]Post, 25)
+	for i := 0; i < 25 && posts.Next(); i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		postsArray[i] = Post{content, postID, uuid, postTime}
+		postsArray[i] = Post{content, postID, userid, postTime}
+		numPosts++
 	}
+
+	posts.Close()
 	err = posts.Err()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
   //encode fetched data as json and serve to client
-  json.NewEncoder(w).Encode(postsArray)
+  json.NewEncoder(w).Encode(postsArray[:numPosts])
+  return;
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
@@ -151,32 +154,29 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-	defer posts.Close()
-	postsPointer := posts
-	counter := 0
-	for postsPointer.Next() {
-		counter++
-	}
 	var (
 		content string
 		postID string
 		userid string
 		postTime time.Time
 	)
-	postsArray := make([]Post, counter)
-	for i := 0; i < counter; i++ {
+	numPosts := 0
+	postsArray := make([]Post, 25)
+	for i := 0; i < 25 && posts.Next(); i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
 		postsArray[i] = Post{content, postID, userid, postTime}
-	}
+		numPosts++
+	}	
+
 	err = posts.Err()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
   //encode fetched data as json and serve to client
-  json.NewEncoder(w).Encode(postsArray)
+  json.NewEncoder(w).Encode(postsArray[:numPosts])
 }

@@ -15,7 +15,7 @@ func InitDB() *sql.DB {
 	log.Println("attempting connections")
 
 	var err error
-	DB, err = sql.Open("mysql", "root:root@tcp(172.28.1.2:3306)/postsDB")
+	DB, err = sql.Open("mysql", "root:root@tcp(172.28.1.2:3306)/postsDB?parseTime=true")
 	// DB, err = sql.Open("mysql", "root:root@tcp(localhost:3306)/postsDB")
 
 
