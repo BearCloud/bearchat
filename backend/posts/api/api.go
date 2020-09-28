@@ -57,6 +57,7 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
+<<<<<<< HEAD
 	var (
 		content string
 		postID string
@@ -66,7 +67,22 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 	numPosts := 0
 	postsArray := make([]Post, 25)
 	for i := 0; i < 25 && posts.Next(); i++ {
+=======
+	defer posts.Close()
+	var postsArray [25]Post
+	counter := 0
+	for i := 0; i < 25; i++ {
+		var (
+			content string
+			postID string
+			userid string
+			postTime time.Time
+		)
+>>>>>>> c0eecefef0b48ad3df46cbd5d7778ef036252283
 		err = posts.Scan(&content, &postID, &userid, &postTime)
+		if postID != nil {
+			counter++
+		}
 		if err != nil {
 			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
@@ -82,8 +98,12 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
   //encode fetched data as json and serve to client
+<<<<<<< HEAD
   json.NewEncoder(w).Encode(postsArray[:numPosts])
   return;
+=======
+  json.NewEncoder(w).Encode(postsArray[:counter])
+>>>>>>> c0eecefef0b48ad3df46cbd5d7778ef036252283
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
@@ -154,6 +174,7 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
+<<<<<<< HEAD
 	var (
 		content string
 		postID string
@@ -163,7 +184,22 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 	numPosts := 0
 	postsArray := make([]Post, 25)
 	for i := 0; i < 25 && posts.Next(); i++ {
+=======
+	defer posts.Close()
+	var postsArray [25]Post
+	counter := 0
+	for i := 0; i < 25; i++ {
+		var (
+			content string
+			postID string
+			userid string
+			postTime time.Time
+		)
+>>>>>>> c0eecefef0b48ad3df46cbd5d7778ef036252283
 		err = posts.Scan(&content, &postID, &userid, &postTime)
+		if postID != nil {
+			counter++
+		}
 		if err != nil {
 			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
@@ -178,5 +214,10 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
   //encode fetched data as json and serve to client
+<<<<<<< HEAD
   json.NewEncoder(w).Encode(postsArray[:numPosts])
 }
+=======
+  json.NewEncoder(w).Encode(postsArray[:counter])
+}
+>>>>>>> c0eecefef0b48ad3df46cbd5d7778ef036252283
