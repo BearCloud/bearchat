@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"github.com/joho/godotenv"
 	"log"
 
 	//MySQL driver
@@ -17,13 +16,9 @@ var (
 //InitDB creates the MySQL database connection
 func InitDB() *sql.DB {
 
-	err := godotenv.Load()
-	if err != nil {
-		panic(err.Error())
-	}
-
 	log.Println("attempting connections")
 
+	var err error
 	DB, err = sql.Open("mysql", "root:root@tcp(172.28.1.2:3306)/auth")
 
 	if err != nil {

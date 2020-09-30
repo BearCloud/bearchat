@@ -129,9 +129,6 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Name:    "access_token",
 		Value:   accessToken,
 		Expires: accessExpiresAt,
-		Secure: true,
-		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
 		Path: "/api",
 	})
 
@@ -157,6 +154,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Name:    "refresh_token",
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
+		Path: "/api",
 	})
 
 	// Send verification email
@@ -184,6 +182,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 
 	credentials := Credentials{}
 	err := json.NewDecoder(r.Body).Decode(&credentials)
+	// if there is an error processing the credentials, print that error
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -193,6 +192,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 	var hashedPassword, userID string
 	var verified bool
 	err = DB.QueryRow("select hashedPassword, userId, verified from users where username=?", credentials.Username).Scan(&hashedPassword, &userID, &verified)
+	// process errors associated with emails
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, errors.New("this email is not associated with an account").Error(), http.StatusNotFound)
@@ -231,6 +231,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Name:    "access_token",
 		Value:   accessToken,
 		Expires: accessExpiresAt,
+		Path: "/api",
 	})
 
 	// Set refresh token as a cookie.
@@ -255,11 +256,13 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Name:    "refresh_token",
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
+		Path: "/api",
 	})
   w.WriteHeader(200)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
+	// logging out causes expiration time of cookie to be set to now
 	var expiresAt = time.Now().Add(-1 * time.Minute)
 	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "", Expires: expiresAt})
 	http.SetCookie(w, &http.Cookie{Name: "refresh_token", Value: "", Expires: expiresAt})
@@ -268,7 +271,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 func verify(w http.ResponseWriter, r *http.Request) {
 	token, ok := r.URL.Query()["token"]
-
+	// check that valid token exists
 	if !ok || len(token[0]) < 1 {
 		http.Error(w, errors.New("Url Param 'token' is missing").Error(), http.StatusInternalServerError)
 		log.Print(errors.New("Url Param 'token' is missing").Error())

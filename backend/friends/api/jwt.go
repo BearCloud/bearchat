@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
+	"fmt"
 )
 
 var jwtKey = []byte("my_secret_key")

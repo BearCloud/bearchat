@@ -26,5 +26,6 @@ func main() {
 		log.Fatal("Error registering API endpoints")
 	}
 
+	log.Println("listening...")
 	log.Fatal(http.ListenAndServe(":80", router))
 }
