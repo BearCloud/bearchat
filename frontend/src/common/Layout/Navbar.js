@@ -8,7 +8,7 @@ import { request, getUUID } from '../utils.js';
 function Navbar(props) {
     const [isAuth, setIsAuth] = useState(null);
     const handleAuth = (res) => {
-        if (res.status == 400 || res.status == 401) {
+        if (res.status !== 200) {
             setIsAuth(false);
         } else {
             setIsAuth(true);
