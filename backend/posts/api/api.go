@@ -25,13 +25,13 @@ func RegisterRoutes(router *mux.Router) error {
 func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
-		http.Error(w, errors.New("error obtaining cookie: " + err.Error()), http.StatusBadRequest)
+		http.Error(w, errors.New("error obtaining cookie: " + err.Error()).Error(), http.StatusBadRequest)
 		log.Print(err.Error())
 	}
 	//validate the cookie
 	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
-		http.Error(w, errors.New("error validating token: " + err.Error()), http.StatusUnauthorized)
+		http.Error(w, errors.New("error validating token: " + err.Error()).Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
 	}
 	log.Println(claims)
