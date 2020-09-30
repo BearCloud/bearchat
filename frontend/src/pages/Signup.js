@@ -20,7 +20,7 @@ function Signup(props) {
           text: "You've successfully signed up. Go ahead and log in!",
           icon: "success"
         }).then(() => {
-          window.location.href = '/';
+          window.location.href = '/signin';
         });
       })
       .catch((res) => {
