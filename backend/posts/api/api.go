@@ -14,10 +14,10 @@ import (
 
 
 func RegisterRoutes(router *mux.Router) error {
-	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet)
-	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet)
-	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost)
-	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete)
+	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete, http.MethodOptions)
 
 	return nil
 }
