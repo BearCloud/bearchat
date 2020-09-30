@@ -1,4 +1,4 @@
-import decode from 'jsonwebtoken'
+import { decode } from 'jsonwebtoken';
 import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
@@ -10,10 +10,20 @@ export function getUsername() {
   return uuid;
 }
 
+export function getUUID() {
+  let loginToken = cookies.get("access_token");
+  let uuid = getUUIDFromToken(loginToken);
+  // TODO: convert to username
+  return uuid;
+}
+
 function getUUIDFromToken(token) {
   // TODO: verify signature; return error if invalid
   // TODO: verify header and payload; return error if invalid
   let decoded = decode(token, {complete: true});
+  if (decoded === null) {
+    return null;
+  }
   return decoded.payload.UserID;
 }
 

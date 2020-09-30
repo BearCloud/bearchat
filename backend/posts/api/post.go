@@ -7,5 +7,4 @@ type Post struct {
 	PostID   string    `json:"postID"`
 	AuthorID string    `json:"AuthorID"`
 	PostTime time.Time `json:"postTime"`
-	PostAuthor string `json:"postAuthor"`
 }

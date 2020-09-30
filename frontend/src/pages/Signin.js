@@ -18,6 +18,8 @@ function Signin(props) {
           text: "You've successfully logged in!",
           icon: "success",
           timeout: 5000
+        }).then(() => {
+          window.location.href = '/';
         });
       })
       .catch((res) => {
