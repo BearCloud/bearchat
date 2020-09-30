@@ -26,11 +26,5 @@ func InitDB() *sql.DB {
 		panic(err.Error())
 	}
 
-	err = DB.Ping()
-	if err != nil {
-		log.Println("couldnt ping")
-		panic(err.Error())
-	}
-
 	return DB
 }

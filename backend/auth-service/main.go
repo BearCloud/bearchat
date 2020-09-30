@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -21,15 +20,11 @@ func main() {
 	api.InitMailer()
 
 	//Initialize our database connection
+	log.Println("initializing db...")
 	DB := api.InitDB()
 	defer DB.Close()
+	log.Println("db init complete")
 
-	//ping the database to make sure it's up
-	err = DB.Ping()
-	if err != nil {
-		log.Println("pinging database")
-		panic(err.Error())
-	}
 	// Create a new mux for routing api calls
 	router := mux.NewRouter()
 
