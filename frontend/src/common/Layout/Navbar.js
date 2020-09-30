@@ -6,7 +6,6 @@ import { request, getUUID } from '../utils.js';
 
 function Navbar(props) {
   const [isAuth, setIsAuth] = useState(false);
-  const uuid = getUUID();
   request('GET', 'http://localhost:81/api/posts/0', {})
     .then((res) => {
       console.log(res.status, res.responseText);

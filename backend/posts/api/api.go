@@ -15,9 +15,9 @@ import (
 
 func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet)
-	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost)
-	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete)
+	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete, http.MethodOptions)
 
 	return nil
 }
@@ -42,6 +42,13 @@ func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 }
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 
 	uuid := mux.Vars(r)["uuid"]
 	startIndex := mux.Vars(r)["startIndex"]
@@ -89,6 +96,14 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	userID := getUUID(w, r)
 	var post Post
 	json.NewDecoder(r.Body).Decode(&post)
@@ -105,6 +120,14 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func deletePost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	postID := mux.Vars(r)["postID"]
 	//fetch cookie
 	uuid := getUUID(w, r)
@@ -141,6 +164,14 @@ func deletePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFeed(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	//get the start index
 	startIndex := mux.Vars(r)["startIndex"]
 	//convert to int
