@@ -14,10 +14,10 @@ import (
 
 
 func RegisterRoutes(router *mux.Router) error {
-	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost, http.MethodOptions)
-	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete, http.MethodOptions)
+	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet)
+	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet)
+	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost)
+	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete)
 
 	return nil
 }
@@ -25,13 +25,13 @@ func RegisterRoutes(router *mux.Router) error {
 func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, errors.New("error obtaining cookie: " + err.Error()), http.StatusBadRequest)
 		log.Print(err.Error())
 	}
 	//validate the cookie
 	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, errors.New("error validating token: " + err.Error()), http.StatusUnauthorized)
 		log.Print(err.Error())
 	}
 	log.Println(claims)
