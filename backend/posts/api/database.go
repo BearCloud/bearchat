@@ -15,9 +15,6 @@ func InitDB() *sql.DB {
 	log.Println("attempting connections")
 
 	var err error
-<<<<<<< HEAD
-	DB, err = sql.Open("mysql", "root:root@tcp(172.28.1.3:3307)/auth")
-=======
 	DB, err = sql.Open("mysql", "root:root@tcp(172.28.1.2:3306)/postsDB?parseTime=true")
 	// DB, err = sql.Open("mysql", "root:root@tcp(localhost:3306)/postsDB")
 
@@ -27,7 +24,6 @@ func InitDB() *sql.DB {
 		log.Println("couldnt connect")
 		panic(err.Error())
 	}
->>>>>>> master
 
 	err = DB.Ping()
 	if err != nil {

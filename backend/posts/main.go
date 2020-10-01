@@ -29,8 +29,6 @@ func main() {
 
 	log.Println("listening...")
 	log.Fatal(http.ListenAndServe(":80", router))
-<<<<<<< HEAD
-=======
 }
 
 func CORS(next http.Handler) http.Handler {
@@ -50,5 +48,4 @@ func CORS(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 		return
 	})
->>>>>>> master
 }

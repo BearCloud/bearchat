@@ -71,7 +71,7 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		postsArray[i] = Post{content, postID, userid, postTime}
+		postsArray[i] = Post{content, postID, userid, postTime, uuid}
 		numPosts++
 	}
 
@@ -95,7 +95,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.Content, postID, userID, time.Now().In(pst))
+	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.PostBody, postID, userID, time.Now().In(pst))
 	if err != nil {
 		http.Error(w, errors.New("error storing post into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -168,7 +168,7 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		postsArray[i] = Post{content, postID, userid, postTime}
+		postsArray[i] = Post{content, postID, userid, postTime, uuid}
 		numPosts++
 	}
 
