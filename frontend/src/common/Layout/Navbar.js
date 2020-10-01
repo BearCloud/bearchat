@@ -14,10 +14,13 @@ function Navbar(props) {
             setIsAuth(true);
         }
     };
-    request('GET', 'http://localhost:81/api/posts/0', {})
-        .then(handleAuth)
-        .catch(handleAuth)
-    ;
+
+    if (isAuth === null) {
+        request('GET', 'http://localhost:81/api/posts/0', {})
+            .then(handleAuth)
+            .catch(handleAuth)
+        ;
+    }
 
     var navComponents;
     if (isAuth) {

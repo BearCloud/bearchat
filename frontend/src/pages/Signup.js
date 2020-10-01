@@ -11,7 +11,7 @@ function Signup(props) {
 
   const send = (e) => {
     e.preventDefault();
-    console.log(email, username, password);
+    console.log(email, username);
     request('POST', 'http://localhost:80/api/auth/signup', {}, JSON.stringify({ email: email, username: username, password: password }))
       .then((res) => {
         console.log(res.status);
