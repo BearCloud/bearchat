@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"github.com/go-gremlin/gremlin"
 	"github.com/gorilla/mux"
+	"log"
+	"encoding/json"
 )
 
 func RegisterRoutes(router *mux.Router) error {
@@ -11,29 +13,32 @@ func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/friends/{uuid}", addFriend).Methods(http.MethodPost)
 	router.HandleFunc("/api/friends/{uuid}", deleteFriend).Methods(http.MethodDelete)
 	router.HandleFunc("/api/friends/{uuid}/mutual", mutualFriends).Methods(http.MethodGet)
-	router.HandleFunc("/api/friends", getFriends).Methods(http.MethodGet)
+	//router.HandleFunc("/api/friends", getFriends).Methods(http.MethodGet)
 	router.HandleFunc("/api/friends", addUser).Methods(http.MethodPost)
 
 	return nil
 }
 
-func getUUID (r *http.Request) (uuid string, err Error) {
+func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Print(err.Error())
 	}
-	claim, err := getClaims(cookie.Value)
+	//validate the cookie
+	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
 	}
-	return claim.UserID, err
+	log.Println(claims)
+
+	return claims["UserID"].(string)
 }
 
 func addUser (w http.ResponseWriter, r *http.Request) {
-	uuid := getUUID(r)
-	_, err := gremlin.Query('g.addV().property('uuid', userID)').Bindings(gremlin.Bind{"userID": uuid).Exec()
+	uuid := getUUID(w, r)
+	_, err := DB.Exec(gremlin.Query(`g.addV().property("uuid", userID)`).Bindings(gremlin.Bind{"userID": uuid}))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -42,20 +47,20 @@ func addUser (w http.ResponseWriter, r *http.Request) {
 
 func areFriends(w http.ResponseWriter, r *http.Request) {
 	otherUUID := mux.Vars(r)["uuid"]
-	uuid := getUUID(r)
-	isFriend, err := gremlin.Query('g.V().has('uuid', userID).out('friends with').where(otherV().has('uuid', otherUUID)).count()').Bindings(gremlin.Bind{"userID": uuid, "otherUUID": otherUUID}).Exec()
+	uuid := getUUID(w, r)
+	isFriend, err := DB.Exec(gremlin.Query(`g.V().has("uuid", userID).out("friends with").where(otherV().has("uuid", otherUUID)).count()`).Bindings(gremlin.Bind{"userID": uuid, "otherUUID": otherUUID}))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 		return
 	}
-	json.NewEncoder(w).Encode((isFriend != 0))
+	json.NewEncoder(w).Encode(string(isFriend))
 }
 
 func addFriend(w http.ResponseWriter, r *http.Request) {
 	otherUUID := mux.Vars(r)["uuid"]
-	uuid := getUUID(r)
-	addFriend, err := gremlin.Query('g.addEdge(g.V().has('uuid', userID).next(), g.V().has('uuid', otherUUID).next(), 'friends with')').Bindings(gremlin.Bind{"userID": uuid, "otherUUID": otherUUID}).Exec()
+	uuid := getUUID(w, r)
+	_, err := DB.Exec(gremlin.Query(`g.addEdge(g.V().has("uuid", userID).next(), g.V().has("uuid", otherUUID).next(), "friends with")`).Bindings(gremlin.Bind{"userID": uuid, "otherUUID": otherUUID}))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -65,8 +70,8 @@ func addFriend(w http.ResponseWriter, r *http.Request) {
 
 func deleteFriend(w http.ResponseWriter, r *http.Request) {
 	otherUUID := mux.Vars(r)["uuid"]
-	uuid := getUUID(r)
-	delFriend, err := gremlin.Query('g.V().has('uuid', userID).out('friends with').where(otherV().has('uuid', otherUUID)).drop()').Bindings(gremlin.Bind{"userID": uuid, "otherUUID": otherUUID}).Exec()
+	uuid := getUUID(w, r)
+	_, err := DB.Exec(gremlin.Query(`g.V().has("uuid", userID).out("friends with").where(otherV().has("uuid", otherUUID)).drop()`).Bindings(gremlin.Bind{"userID": uuid, "otherUUID": otherUUID}))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -76,8 +81,8 @@ func deleteFriend(w http.ResponseWriter, r *http.Request) {
 
 func mutualFriends(w http.ResponseWriter, r *http.Request) {
 	otherUUID := mux.Vars(r)["uuid"]
-	uuid := getUUID(r)
-	isFriend, err := gremlin.Query('g.V().has('uuid', userID).out('friends with').where(otherV().out('friends with').where(otherV().has('uuid', otherUUID)))').Bindings(gremlin.Bind{"userID": uuid, "otherUUID": otherUUID}).Exec()
+	uuid := getUUID(w, r)
+	isFriend, err := DB.Exec(gremlin.Query(`g.V().has("uuid", userID).out("friends with").where(otherV().out("friends with").where(otherV().has("uuid", otherUUID)))`).Bindings(gremlin.Bind{"userID": uuid, "otherUUID": otherUUID}))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
