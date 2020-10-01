@@ -277,9 +277,9 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// logging out causes expiration time of cookie to be set to now
-	var expiresAt = time.Now().Add(-1 * time.Minute)
-	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "", Expires: expiresAt})
-	http.SetCookie(w, &http.Cookie{Name: "refresh_token", Value: "", Expires: expiresAt})
+	var expiresAt = time.Now().Add(-1000 * time.Minute)
+	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "a", Expires: expiresAt, Path: "/"})
+	http.SetCookie(w, &http.Cookie{Name: "refresh_token", Value: "b", Expires: expiresAt, Path: "/"})
 	return
 }
 
