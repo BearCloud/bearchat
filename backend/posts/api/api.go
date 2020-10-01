@@ -66,13 +66,7 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-<<<<<<< HEAD
-<<<<<<< HEAD
-	
 	postID := uuid.New()
-=======
-=======
->>>>>>> 0f792e0fafe93ecd734de4d058d76046a9c4b1e6
 	var (
 		content string
 		postID string
@@ -87,13 +81,9 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		postsArray[i] = Post{content, postID, userid, postTime}
+		postsArray[i] = Post{content, postID, userid, postTime, uuid}
 		numPosts++
 	}
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> 0f792e0fafe93ecd734de4d058d76046a9c4b1e6
 
 	posts.Close()
 	err = posts.Err()
@@ -212,7 +202,7 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		postsArray[i] = Post{content, postID, userid, postTime}
+		postsArray[i] = Post{content, postID, userid, postTime, uuid}
 		numPosts++
 	}
 

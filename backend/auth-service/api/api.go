@@ -44,9 +44,10 @@ func RegisterRoutes(router *mux.Router) error {
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Headers", "content-type")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	if (*r).Method == "OPTIONS" {
 		return
@@ -129,10 +130,10 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Name:    "access_token",
 		Value:   accessToken,
 		Expires: accessExpiresAt,
-		Secure: true,
-		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
-		Path: "/api",
+		// Secure: true,
+		// HttpOnly: true,
+		// SameSite: http.SameSiteNoneMode,
+		Path: "/",
 	})
 
 	// Set refresh token as a cookie.
@@ -157,7 +158,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Name:    "refresh_token",
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
-		Path: "/api",
+		Path: "/",
 	})
 
 	// Send verification email
@@ -175,9 +176,10 @@ func signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func signin(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	if (*r).Method == "OPTIONS" {
 		return
@@ -234,7 +236,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Name:    "access_token",
 		Value:   accessToken,
 		Expires: accessExpiresAt,
-		Path: "/api",
+		Path: "/",
 	})
 
 	// Set refresh token as a cookie.
@@ -259,12 +261,20 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Name:    "refresh_token",
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
-		Path: "/api",
+		Path: "/",
 	})
   w.WriteHeader(200)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	// logging out causes expiration time of cookie to be set to now
 	var expiresAt = time.Now().Add(-1 * time.Minute)
 	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "", Expires: expiresAt})
@@ -273,6 +283,15 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func verify(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "localhost:3000")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	token, ok := r.URL.Query()["token"]
 	// check that valid token exists
 	if !ok || len(token[0]) < 1 {
@@ -292,6 +311,14 @@ func verify(w http.ResponseWriter, r *http.Request) {
 
 
 func sendReset(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "localhost:3000")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 
 	//email from body
 	credentials := Credentials{}
@@ -329,7 +356,15 @@ func sendReset(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetPassword(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "localhost:3000")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+	
 	//get token from query params
 	token := r.URL.Query().Get("token")
 

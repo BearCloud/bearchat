@@ -37,6 +37,7 @@ export function request(method, url, qs, body) {
     }
     xhr.open(method, u.toString(), true);
     xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.withCredentials = true;
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(xhr);
