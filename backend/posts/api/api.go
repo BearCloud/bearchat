@@ -57,10 +57,6 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-<<<<<<< HEAD
-	
-	postID := uuid.New()
-=======
 	var (
 		content string
 		postID string
@@ -78,7 +74,6 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		postsArray[i] = Post{content, postID, userid, postTime}
 		numPosts++
 	}
->>>>>>> master
 
 	posts.Close()
 	err = posts.Err()
