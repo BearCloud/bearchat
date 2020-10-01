@@ -14,10 +14,10 @@ import (
 
 
 func RegisterRoutes(router *mux.Router) error {
-	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet)
-	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet)
-	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost)
-	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete)
+	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete, http.MethodOptions)
 
 	return nil
 }
@@ -27,12 +27,14 @@ func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 	if err != nil {
 		http.Error(w, errors.New("error obtaining cookie: " + err.Error()).Error(), http.StatusBadRequest)
 		log.Print(err.Error())
+		return ""
 	}
 	//validate the cookie
 	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
 		http.Error(w, errors.New("error validating token: " + err.Error()).Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
+		return ""
 	}
 	log.Println(claims)
 
@@ -40,6 +42,13 @@ func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 }
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 
 	uuid := mux.Vars(r)["uuid"]
 	startIndex := mux.Vars(r)["startIndex"]
@@ -58,9 +67,12 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
 <<<<<<< HEAD
+<<<<<<< HEAD
 	
 	postID := uuid.New()
 =======
+=======
+>>>>>>> 0f792e0fafe93ecd734de4d058d76046a9c4b1e6
 	var (
 		content string
 		postID string
@@ -78,7 +90,10 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		postsArray[i] = Post{content, postID, userid, postTime}
 		numPosts++
 	}
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> 0f792e0fafe93ecd734de4d058d76046a9c4b1e6
 
 	posts.Close()
 	err = posts.Err()
@@ -92,6 +107,14 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	userID := getUUID(w, r)
 	var post Post
 	json.NewDecoder(r.Body).Decode(&post)
@@ -100,7 +123,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.Content, postID, userID, time.Now().In(pst))
+	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.PostBody, postID, userID, time.Now().In(pst))
 	if err != nil {
 		http.Error(w, errors.New("error storing post into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -108,6 +131,14 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func deletePost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	postID := mux.Vars(r)["postID"]
 	//fetch cookie
 	uuid := getUUID(w, r)
@@ -144,6 +175,14 @@ func deletePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFeed(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+
 	//get the start index
 	startIndex := mux.Vars(r)["startIndex"]
 	//convert to int
