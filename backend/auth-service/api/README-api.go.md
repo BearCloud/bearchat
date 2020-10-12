@@ -40,3 +40,7 @@ The process is similar to `signup` except for a few noticable differences:
 ### `logout`
 
 Delete the user's access token cookie. This cannot be done directly; clearing cookies is the responsibility of the browser. Instead, we delete cookies by setting its expiry time to before the current time.
+
+### `resetPassword`
+
+Resetting the password is similar to `verify` except instead of checking for a matching verification token, you must check for a matching password reset token. When the matching password token is found, the old password should be overwritten with the new password.
