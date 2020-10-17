@@ -44,3 +44,13 @@ Delete the user's access token cookie. This cannot be done directly; clearing co
 ### `resetPassword`
 
 Resetting the password is similar to `verify` except instead of checking for a matching verification token, you must check for a matching password reset token. When the matching password token is found, the old password should be overwritten with the new password.
+
+### Hashing Passwords
+
+Storing passwords in cleartext is a very bad idea because a database breach or a malacious database access leaks the passwords of your entire userbase. Thus, it is advised to hash the password using a cryptographic hash function. CS161 will go more in depth, but hashing the password means that even if an attacker manages full database access, it is infeasible to find the password of any account. This is because cryptographic hash functions are difficult to invert; that is, given an output, it is difficult to find any input which maps to that output without bruteforce.
+
+In this project, these cryptographic hash functions are already implemented for you in the library `bcrypt`. The documentation for this library can be found here: https://godoc.org/golang.org/x/crypto/bcrypt.
+
+In general, it is not feasible to invert the result of a hash function. Therefore, in order to determine whether or not a cleartext password matches a hash, one must hash the cleartext password and then check for equality. 
+
+`bcrypt` also includes a `cost` field in its hash function. This re-hashes the password `2^{cost}` times. For example, if `cost = 10` then the password will be hashed, and hashed, and hashed again 1024 times. A high cost function makes bruteforcing passwords more annoying, but also makes password verification slower. In this project, you can select any cost, but we recommend using the default cost `bcrypt.DefaultCost`.
