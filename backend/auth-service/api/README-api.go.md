@@ -22,7 +22,9 @@ Users will sign up with a username, email, and password. We want to ensure that 
 
 SQL queries are made against the `users` table, and its schema is mentioned above. The docs for database library we are using in this project can be found here: https://golang.org/pkg/database/sql/
 
-If the request succeeds, then we fill out the relevant fields in the user object before storing it. Note that we store the hash of the password rather than the password itself. Also note that sign up isn't complete in one step; we need to verify the user by sending them an email with the verification token.
+If the request succeeds, then we fill out the relevant fields in the user object before storing it. Note that we store the hash of the password rather than the password itself. (see "Hashing Passwords" section below.) Also note that sign up isn't complete in one step; we need to verify the user by sending them an email with the verification token.
+
+We highly recommend that you finish this function first because it is the most involved. It will also be the function that will probably take you the longest.
 
 ### `verify`
 
@@ -51,6 +53,6 @@ Storing passwords in cleartext is a very bad idea because a database breach or a
 
 In this project, these cryptographic hash functions are already implemented for you in the library `bcrypt`. The documentation for this library can be found here: https://godoc.org/golang.org/x/crypto/bcrypt.
 
-In general, it is not feasible to invert the result of a hash function. Therefore, in order to determine whether or not a cleartext password matches a hash, one must hash the cleartext password and then check for equality. 
+In general, it is not feasible to invert the result of a hash function. Therefore, in order to determine whether or not a cleartext password matches a hash, one must hash the cleartext password and then check for equality.
 
 `bcrypt` also includes a `cost` field in its hash function. This re-hashes the password `2^{cost}` times. For example, if `cost = 10` then the password will be hashed, and hashed, and hashed again 1024 times. A high cost function makes bruteforcing passwords more annoying, but also makes password verification slower. In this project, you can select any cost, but we recommend using the default cost `bcrypt.DefaultCost`.
