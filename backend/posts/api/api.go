@@ -100,6 +100,9 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, errors.New("error storing post into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
+
+	w.WriteHeader(201)
+	return
 }
 
 func deletePost(w http.ResponseWriter, r *http.Request) {
