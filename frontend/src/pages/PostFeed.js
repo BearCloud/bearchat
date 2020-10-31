@@ -55,7 +55,9 @@ function PostFeed(props) {
           <Card.Body>
             <Card.Title>User ID {post.authorID}</Card.Title>
             <Card.Subtitle className="mb-2 text-muted">Posted at {post.postTime}</Card.Subtitle>
-            <Card.Text>{post.content}</Card.Text>
+            {/* <Card.Text>{post.content}</Card.Text> */}
+            <div dangerouslySetInnerHTML={{__html: post.content}} >
+                </div>
           </Card.Body>
         </Card>
       );
