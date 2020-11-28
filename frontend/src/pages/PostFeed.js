@@ -53,11 +53,9 @@ function PostFeed(props) {
       postsHtml.push(
         <Card style={{ width: '35rem' }} key={idx}>
           <Card.Body>
-            <Card.Title>User ID {post.authorID}</Card.Title>
+            <Card.Title><a href={`/profile/${post.authorID}`}>User ID {post.authorID}</a></Card.Title>
             <Card.Subtitle className="mb-2 text-muted">Posted at {post.postTime}</Card.Subtitle>
-            {/* <Card.Text>{post.content}</Card.Text> */}
-            <div dangerouslySetInnerHTML={{__html: post.content}} >
-                </div>
+            <Card.Text>{post.content}</Card.Text>
           </Card.Body>
         </Card>
       );

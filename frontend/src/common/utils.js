@@ -19,7 +19,6 @@ function getUUIDFromToken(token) {
 }
 
 export function request(method, url, qs, body) {
-  const allowedOrigins = ["http://localhost:3000", "http://localhost:80"];
   return new Promise((resolve, reject) => {
     let xhr = new XMLHttpRequest();
     let u = new URL(url);

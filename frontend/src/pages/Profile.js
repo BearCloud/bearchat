@@ -40,7 +40,7 @@ function Profile(props) {
 
     console.log("Profile formContent:", content);
 
-    request('PUT', `http://localhost:82/api/profile/${ourUUID}`, {}, JSON.stringify({ content }))
+    request('PUT', `http://localhost:82/api/profile/${ourUUID}`, {}, JSON.stringify(content))
       .then((res) => {
         console.log(res.status);
         swal({
@@ -94,13 +94,12 @@ function Profile(props) {
               <InputGroup.Prepend>
                 <InputGroup.Text>First and last name</InputGroup.Text>
               </InputGroup.Prepend>
-              <FormControl name="firstName" value={profile?.firstName} placeholder={profile?.firstName ?? "Oski"} />
-              <FormControl name="lastName" value={profile?.lastName} placeholder={profile?.firstName ?? "Bear"} />
+              <FormControl name="firstName" placeholder={profile?.firstName ?? "Oski"} />
+              <FormControl name="lastName" placeholder={profile?.lastName ?? "Bear"} />
             </InputGroup>
 
             <InputGroup className="mb-3">
               <FormControl
-                value={profile?.email}
                 placeholder={profile?.email ?? "oski@berkeley.edu"}
                 name="email"
                 type="email"
