@@ -10,4 +10,5 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/schwartzmx/gremtune v0.0.3
 )

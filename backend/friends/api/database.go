@@ -1,14 +1,18 @@
 package api
 
 import(
-  "github.com/furtiaga/gremlin"
+  "github.com/schwartzmx/gremtune"
 )
 
+var gremlinClient *gremtune.Client 
+
 func InitDB() {
-  if err := gremlin.NewCluster("https://neptune-endpoint:8182/gremlin"); err != nil {
+  dialer := gremtune.NewDialer("https://neptune-endpoint:8182/gremlin")
+  gremlinClient, err := gremtune.Dial(dialer, nil)
+  if err != nil {
 		panic(err)
 	}
-	_, err = gremlin.Query(`g.V()`).Exec()
+  _, err = gremlinClient.Execute("g.V()")
 	if err != nil {
 		panic(err)
 	}
