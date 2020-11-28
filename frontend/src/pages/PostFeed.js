@@ -27,7 +27,7 @@ function PostFeed(props) {
       .then((res) => {
         console.log(res.status);
         swal({
-          title: "Signed in!",
+          title: "Posted!",
           text: "Successfully created post!",
           icon: "success",
           timeout: 5000

@@ -44,19 +44,20 @@ function Profile(props) {
       .then((res) => {
         console.log(res.status);
         swal({
-          title: "Signed in!",
-          text: "Successfully created post!",
+          title: "Updated!",
+          text: "Successfully updated profile!",
           icon: "success",
           timeout: 5000
         }).then(() => {
-          window.location.href = '/';
+          window.location.reload();
         });
       })
       .catch((res) => {
         console.log("err: ", res);
+        const errMessage = res?.responseText?.trim();
         swal({
-          title: "Could not create post!",
-          text: `Error when attempting to create post (HTTP ${res.status}): ${res.responseText.trim()}.`,
+          title: "Could not update profile!",
+          text: `Error when attempting to update profile (HTTP ${res.status}): ${errMessage}.`,
           icon: "error"
         });
       });
