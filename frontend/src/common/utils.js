@@ -3,18 +3,9 @@ import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
 
-export function getUsername() {
-  let loginToken = cookies.get("access_token");
-  let uuid = getUUIDFromToken(loginToken);
-  // TODO: convert to username
-  return uuid;
-}
-
 export function getUUID() {
   let loginToken = cookies.get("access_token");
-  let uuid = getUUIDFromToken(loginToken);
-  // TODO: convert to username
-  return uuid;
+  return getUUIDFromToken(loginToken);
 }
 
 function getUUIDFromToken(token) {
