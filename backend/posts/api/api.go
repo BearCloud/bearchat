@@ -1,17 +1,16 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
-	"net/http"
-	"time"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"database/sql"
+	"log"
+	"net/http"
 	"strconv"
+	"time"
 )
-
 
 func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet, http.MethodOptions)
@@ -22,17 +21,17 @@ func RegisterRoutes(router *mux.Router) error {
 	return nil
 }
 
-func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
+func getUUID(w http.ResponseWriter, r *http.Request) (uuid string) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
-		http.Error(w, errors.New("error obtaining cookie: " + err.Error()).Error(), http.StatusBadRequest)
+		http.Error(w, errors.New("error obtaining cookie: "+err.Error()).Error(), http.StatusBadRequest)
 		log.Print(err.Error())
 		return ""
 	}
 	//validate the cookie
 	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
-		http.Error(w, errors.New("error validating token: " + err.Error()).Error(), http.StatusUnauthorized)
+		http.Error(w, errors.New("error validating token: "+err.Error()).Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
 		return ""
 	}
@@ -44,13 +43,13 @@ func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 func getPosts(w http.ResponseWriter, r *http.Request) {
 	uuid := mux.Vars(r)["uuid"]
 	startIndex := mux.Vars(r)["startIndex"]
-  	//check auth
+	//check auth
 	isAuthorized := (getUUID(w, r) == uuid)
 	if !isAuthorized {
 		http.Error(w, errors.New("Not authorized to get posts").Error(), http.StatusUnauthorized)
-		return;
+		return
 	}
-  	//fetch public vs private depending on if user is accessing own profile
+	//fetch public vs private depending on if user is accessing own profile
 	var posts *sql.Rows
 	var err error
 	posts, err = DB.Query("SELECT * FROM posts WHERE authorID = ? ORDER BY postTime LIMIT ?, 25", uuid, startIndex)
@@ -59,9 +58,9 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
 	var (
-		content string
-		postID string
-		userid string
+		content  string
+		postID   string
+		userid   string
 		postTime time.Time
 	)
 	numPosts := 0
@@ -69,7 +68,7 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 25 && posts.Next(); i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if err != nil {
-			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
+			http.Error(w, errors.New("Error scanning content: "+err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
 		postsArray[i] = Post{content, postID, userid, postTime}
@@ -82,9 +81,9 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-  //encode fetched data as json and serve to client
-  json.NewEncoder(w).Encode(postsArray[:numPosts])
-  return;
+	//encode fetched data as json and serve to client
+	json.NewEncoder(w).Encode(postsArray[:numPosts])
+	return
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
@@ -103,6 +102,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(201)
+	return
 }
 
 func deletePost(w http.ResponseWriter, r *http.Request) {
@@ -151,16 +151,16 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 	}
 	//fetch cookie
 	uuid := getUUID(w, r)
-  //fetch public vs private depending on if user is accessing own profile
+	//fetch public vs private depending on if user is accessing own profile
 	posts, err := DB.Query("SELECT * FROM posts WHERE authorID <> ? ORDER BY postTime LIMIT ?, 25", uuid, intStartIndex)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
 	var (
-		content string
-		postID string
-		userid string
+		content  string
+		postID   string
+		userid   string
 		postTime time.Time
 	)
 	numPosts := 0
@@ -168,7 +168,7 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 25 && posts.Next(); i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if err != nil {
-			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
+			http.Error(w, errors.New("Error scanning content: "+err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
 		postsArray[i] = Post{content, postID, userid, postTime}
@@ -180,6 +180,6 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-  //encode fetched data as json and serve to client
-  json.NewEncoder(w).Encode(postsArray[:numPosts])
+	//encode fetched data as json and serve to client
+	json.NewEncoder(w).Encode(postsArray[:numPosts])
 }

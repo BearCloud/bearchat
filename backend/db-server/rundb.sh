@@ -1,1 +1,1 @@
-docker run -e MYSQL_ROOT_HOST=% -p 3306:3306 auth-db
+docker run -e MYSQL_ROOT_HOST=% -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 auth-db

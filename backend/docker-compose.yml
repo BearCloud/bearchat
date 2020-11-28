@@ -57,6 +57,17 @@ services:
             bearchat:
               ipv4_address:
                 172.28.1.4
+                
+    friends-service:
+          build: ./friends
+          container_name: friends-service
+          restart: on-failure
+          ports:
+            - "83:80"
+          networks:
+            bearchat:
+              ipv4_address:
+                172.28.1.5
 networks:
     bearchat:
         ipam:

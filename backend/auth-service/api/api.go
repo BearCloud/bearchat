@@ -301,9 +301,14 @@ func verify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := DB.Exec("UPDATE users SET verified=1 WHERE verifiedToken = ?", token[0])
+	result , err := DB.Exec("UPDATE users SET verified=1 WHERE verifiedToken = ?", token[0])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Print(err.Error())
+	}
+	affected, err := result.RowsAffected()
+	if affected < 1 {
+		http.Error(w, "no rows affected", http.StatusBadRequest)
 		log.Print(err.Error())
 	}
 

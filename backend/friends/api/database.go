@@ -1,15 +1,18 @@
 package api
 
 import(
-  "github.com/go-gremlin/gremlin"
+  "github.com/schwartzmx/gremtune"
 )
-var DB *gremlin.Client
+
+var gremlinClient *gremtune.Client 
 
 func InitDB() {
-  auth := gremlin.OptAuthUserPass("root", "root")
-  var err error
-	DB, err = gremlin.NewClient("IP:80/gremlin", auth)
-	_, err = DB.ExecQuery(`g.V()`)
+  dialer := gremtune.NewDialer("https://neptune-endpoint:8182/gremlin")
+  gremlinClient, err := gremtune.Dial(dialer, nil)
+  if err != nil {
+		panic(err)
+	}
+  _, err = gremlinClient.Execute("g.V()")
 	if err != nil {
 		panic(err)
 	}
