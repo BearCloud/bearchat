@@ -4,13 +4,13 @@ import(
   "github.com/schwartzmx/gremtune"
 )
 
-var gremlinClient *gremtune.Client 
+var gremlinClient gremtune.Client 
 
 func InitDB() {
   dialer := gremtune.NewDialer("https://neptune-endpoint:8182/gremlin")
 
   var err error
-  *gremlinClient, err = gremtune.Dial(dialer, nil)
+  gremlinClient, err = gremtune.Dial(dialer, nil)
   if err != nil {
 		panic(err)
 	}
