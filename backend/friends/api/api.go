@@ -6,7 +6,6 @@ import (
 	"log"
 	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 const NeptuneURL = "http://database-1.cluster-cfqqv4t1qo18.us-east-1.neptune.amazonaws.com:8182/gremlin"
@@ -43,7 +42,7 @@ func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 
 func getFriends (w http.ResponseWriter, r *http.Request) {
 	uuid := getUUID(w, r)
-	gp := "g.V().has('uuid', '" + uuid + "').out('friends with').values('uuid')"
+	gq := "g.V().has('uuid', '" + uuid + "').out('friends with').values('uuid')"
 	response, err := makeNeptuneRequest(gq)
 	// var req_body map[string]string
 	// req_body["gremlin"] = "g.V().has('uuid', '" + uuid + "').out('friends with').values('uuid')"
@@ -79,7 +78,7 @@ func addFriend(w http.ResponseWriter, r *http.Request) {
 	otherUUID := mux.Vars(r)["uuid"]
 	uuid := getUUID(w, r)
 	gq := "g.addE('friends with').from(g.V().has('uuid', '" + uuid + "')).to(g.V().has('uuid', '" + otherUUID + "'))"
-	response, err := makeNeptuneRequest(gq)
+	_, err := makeNeptuneRequest(gq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -90,7 +89,7 @@ func addFriend(w http.ResponseWriter, r *http.Request) {
 func addUser (w http.ResponseWriter, r *http.Request) {
 	uuid := getUUID(w, r)
 	gq := "g.addV().property('uuid', '" + uuid + "')"
-	response, err := makeNeptuneRequest(gq)
+	_, err := makeNeptuneRequest(gq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -103,7 +102,7 @@ func areFriends(w http.ResponseWriter, r *http.Request) {
 	otherUUID := mux.Vars(r)["uuid"]
 	uuid := getUUID(w, r)
 	gq := "g.V().has('uuid', '" + uuid + "').out('friends with').where(otherV().has('uuid', '" + otherUUID + "')).count()"
-	response, err := makeNeptuneRequest(gq)
+	_, err := makeNeptuneRequest(gq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
