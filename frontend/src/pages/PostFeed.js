@@ -65,6 +65,34 @@ function PostFeed(props) {
     postsHtml = (<p>No posts in your feed from others.</p>);
   }
 
+  var friendsHtml = "Loading...";
+  const [friends, setFriends] = useState(null);
+
+  if (friends === null) {
+    request('GET', `http://localhost:83/api/friends`, {})
+        .then((res) => {
+          setFriends(JSON.parse(res.responseText));
+        })
+        .catch(() => {
+          setFriends(false);
+          console.error("Could not retrieve friends!");
+        })
+    ;
+  } else {
+    if (friends === false) {
+      friendsHtml = "Error retrieving friends list.";
+    } else {
+      friendsHtml = [];
+      for (var uuid of friends) {
+        friendsHtml.push(<p><a href={`/profile/${uuid}`}>User ID {uuid}</a></p>);
+      }
+
+      if (!friends.length) {
+        friendsHtml = (<p>You have not added anyone as your friend. Go add someone!</p>);
+      }
+    }
+  }
+
   return (
     <>
       <h3>New Post</h3>
@@ -85,6 +113,10 @@ function PostFeed(props) {
       <hr />
       <h3>Your Feed</h3>
       { postsHtml }
+
+      <hr />
+      <h3>Your Friends</h3>
+      { friendsHtml }
     </>
   );
 }

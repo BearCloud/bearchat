@@ -72,7 +72,7 @@ function Profile(props) {
         <Card.Body>
           <Card.Title>{profile.firstName} {profile.lastName}</Card.Title>
           <Card.Subtitle className="mb-2 text-muted">User ID {profile.uuid}</Card.Subtitle>
-          <Card.Text>Email {profile.firstName} at <a href={`mailto:${profile.email}`}>{profile.email}</a></Card.Text>
+          <Card.Text>Email {profile.firstName} at <a href={`mailto:${profile.email}`}>{profile.email}</a>.</Card.Text>
         </Card.Body>
       </Card>
     );
@@ -81,6 +81,71 @@ function Profile(props) {
       profileHtml = (<p>You have not created a profile yet.</p>);
     } else {
       profileHtml = (<p>This user has not created a profile yet.</p>);
+    }
+  }
+
+  var friendsHtml = "Loading...";
+
+  const [friends, setFriends] = useState(null);
+
+  if (!thisIsUs) {
+    if (friends !== null) {
+      if (friends === false) {
+        friendsHtml = "Error retrieving friends list.";
+      } else {
+        const areFriends = friends.includes(uuid);
+        if (areFriends) {
+          friendsHtml = "You are friends with ";
+        } else {
+          friendsHtml = "You are not friends with ";
+        }
+        const personName = profile?.firstName ?? "this person";
+        friendsHtml += personName;
+        friendsHtml += ".";
+
+        friendsHtml = (<p>{friendsHtml}</p>);
+
+        if (!areFriends) {
+          const addFriend = (e) => {
+            e.preventDefault();
+            request('POST', 'http://localhost:83/api/friends/addFriend', {}, JSON.stringify({ "uuid": uuid }))
+              .then((res) => {
+                console.log(res.status);
+                swal({
+                  title: "Added Friend!",
+                  text: `Successfully added ${personName} as a friend!`,
+                  icon: "success",
+                  timeout: 5000
+                }).then(() => {
+                  window.location.reload();
+                });
+              })
+              .catch((res) => {
+                console.log("err: ", res);
+                swal({
+                  title: "Could not add friend!",
+                  text: `Error when attempting to add friend (HTTP Status ${res.status}): ${res?.responseText?.trim()}.`,
+                  icon: "error"
+                });
+              });
+          };
+
+          friendsHtml = (<>
+            {friendsHtml}
+            <Button onClick={addFriend} variant="primary">Add as Friend!</Button>
+          </>)
+        }
+      }
+    } else {
+      request('GET', `http://localhost:83/api/friends`, {})
+          .then((res) => {
+            setFriends(JSON.parse(res.responseText));
+          })
+          .catch(() => {
+            setFriends(false);
+            console.error("Could not retrieve friends!");
+          })
+      ;
     }
   }
 
@@ -118,6 +183,11 @@ function Profile(props) {
       </>) : (<>
         <h3>Profile</h3>
         { profileHtml }
+
+        <hr />
+
+        <h3>Friends</h3>
+        { friendsHtml }
       </>)}
     </>
   );
