@@ -1,12 +1,12 @@
 import React, { useState }  from 'react';
-import { request } from '../common/utils.js';
+import { request, HOST } from '../common/utils.js';
 
 function LogOut(props) {
 
   const [out, setOut] = useState(null);
 
   if (out === null) {
-    request('POST', 'http://localhost:80/api/auth/logout', {})
+    request('POST', `http://${HOST}:80/api/auth/logout`, {})
         .then((res) => {
           console.log(res.responseText);
           setOut(true);

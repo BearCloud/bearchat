@@ -1,6 +1,6 @@
 import React, { useState }  from 'react';
 import { Button, Form, Card, InputGroup, FormControl } from 'react-bootstrap';
-import { request, getUUID } from '../common/utils.js';
+import { request, getUUID, HOST } from '../common/utils.js';
 import swal from 'sweetalert';
 
 import { useParams } from "react-router-dom";
@@ -17,7 +17,7 @@ function Profile(props) {
   const [profile, setProfile] = useState(null);
 
   if (profile === null) {
-    request('GET', `http://localhost:82/api/profile/${ourUUID}`, {})
+    request('GET', `http://${HOST}:82/api/profile/${ourUUID}`, {})
         .then((res) => {
           // console.log(res.responseText);
           setProfile(JSON.parse(res.responseText));
@@ -40,7 +40,7 @@ function Profile(props) {
 
     console.log("Profile formContent:", content);
 
-    request('PUT', `http://localhost:82/api/profile/${ourUUID}`, {}, JSON.stringify(content))
+    request('PUT', `http://${HOST}:82/api/profile/${ourUUID}`, {}, JSON.stringify(content))
       .then((res) => {
         console.log(res.status);
         swal({
@@ -108,7 +108,7 @@ function Profile(props) {
         if (!areFriends) {
           const addFriend = (e) => {
             e.preventDefault();
-            request('POST', 'http://localhost:83/api/friends/addFriend', {}, JSON.stringify({ "uuid": uuid }))
+            request('POST', `http://${HOST}:83/api/friends/${uuid}`, {}, "")
               .then((res) => {
                 console.log(res.status);
                 swal({
@@ -137,7 +137,7 @@ function Profile(props) {
         }
       }
     } else {
-      request('GET', `http://localhost:83/api/friends`, {})
+      request('GET', `http://${HOST}:83/api/friends`, {})
           .then((res) => {
             setFriends(JSON.parse(res.responseText));
           })

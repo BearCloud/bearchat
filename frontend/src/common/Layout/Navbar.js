@@ -3,7 +3,7 @@ import { Button } from 'react-bootstrap';
 import ReactNav from 'react-bootstrap/Nav';
 import ReactNavbar from 'react-bootstrap/Navbar';
 import './Navbar.css';
-import { request, getUUID } from '../utils.js';
+import { request, getUUID, HOST } from '../utils.js';
 
 function Navbar(props) {
     const [isAuth, setIsAuth] = useState(null);
@@ -16,7 +16,7 @@ function Navbar(props) {
     };
 
     if (isAuth === null) {
-        request('GET', 'http://localhost:81/api/posts/0', {})
+        request('GET', `http://${HOST}:81/api/posts/0`, {})
             .then(handleAuth)
             .catch(handleAuth)
         ;

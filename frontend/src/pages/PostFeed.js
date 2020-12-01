@@ -1,6 +1,6 @@
 import React, { useState }  from 'react';
 import { Button, Form, Card } from 'react-bootstrap';
-import { request } from '../common/utils.js';
+import { request, HOST } from '../common/utils.js';
 import swal from 'sweetalert';
 
 function PostFeed(props) {
@@ -8,7 +8,7 @@ function PostFeed(props) {
   const [posts, setPosts] = useState(null);
 
   if (posts === null) {
-    request('GET', 'http://localhost:81/api/posts/0', {})
+    request('GET', `http://${HOST}:81/api/posts/0`, {})
         .then((res) => {
           // console.log(res.responseText);
           setPosts(JSON.parse(res.responseText));
@@ -23,7 +23,7 @@ function PostFeed(props) {
 
   const send = (e) => {
     e.preventDefault();
-    request('POST', 'http://localhost:81/api/posts/create', {}, JSON.stringify({ content }))
+    request('POST', `http://${HOST}:81/api/posts/create`, {}, JSON.stringify({ content }))
       .then((res) => {
         console.log(res.status);
         swal({
@@ -69,7 +69,7 @@ function PostFeed(props) {
   const [friends, setFriends] = useState(null);
 
   if (friends === null) {
-    request('GET', `http://localhost:83/api/friends`, {})
+    request('GET', `http://${HOST}:83/api/friends`, {})
         .then((res) => {
           setFriends(JSON.parse(res.responseText));
         })

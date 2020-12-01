@@ -41,3 +41,6 @@ export function request(method, url, qs, body) {
     xhr.send(body);
   });
 }
+
+export const HOST = "35.170.182.110";
+
