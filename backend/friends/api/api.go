@@ -106,7 +106,7 @@ func addFriend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gq = "g.addE('friends with').from(g.V().has('uuid', '" + otherUUID + "')).to(g.V().has('uuid', '" + uuid + "'))"
-	_, err := makeNeptuneRequest(gq)
+	_, err = makeNeptuneRequest(gq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
