@@ -45,7 +45,7 @@ func RegisterRoutes(router *mux.Router) error {
 
 func signup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-	w.Header().Set("Access-Control-Allow-Headers", "content-type")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
@@ -158,7 +158,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		Name:    "refresh_token",
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
-		Path: "/",
+		Path:    "/",
 	})
 
 	// Send verification email
@@ -168,7 +168,6 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		return
 	}
-
 
 	w.WriteHeader(201)
 	return
@@ -236,7 +235,7 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Name:    "access_token",
 		Value:   accessToken,
 		Expires: accessExpiresAt,
-		Path: "/",
+		Path:    "/",
 	})
 
 	// Set refresh token as a cookie.
@@ -261,24 +260,25 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		Name:    "refresh_token",
 		Value:   refreshToken,
 		Expires: refreshExpiresAt,
-		Path: "/",
+		Path:    "/",
 	})
-  w.WriteHeader(200)
+	w.WriteHeader(200)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	if (*r).Method == "OPTIONS" {
 		return
 	}
 
 	// logging out causes expiration time of cookie to be set to now
-	var expiresAt = time.Now().Add(-1 * time.Minute)
-	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "", Expires: expiresAt})
-	http.SetCookie(w, &http.Cookie{Name: "refresh_token", Value: "", Expires: expiresAt})
+	var expiresAt = time.Now().Add(-1000 * time.Minute)
+	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "a", Expires: expiresAt, Path: "/"})
+	http.SetCookie(w, &http.Cookie{Name: "refresh_token", Value: "b", Expires: expiresAt, Path: "/"})
 	return
 }
 
@@ -300,7 +300,7 @@ func verify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result , err := DB.Exec("UPDATE users SET verified=1 WHERE verifiedToken = ?", token[0])
+	result, err := DB.Exec("UPDATE users SET verified=1 WHERE verifiedToken = ?", token[0])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Print(err.Error())
@@ -313,7 +313,6 @@ func verify(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
-
 
 func sendReset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "localhost:3000")
@@ -369,7 +368,7 @@ func resetPassword(w http.ResponseWriter, r *http.Request) {
 	if (*r).Method == "OPTIONS" {
 		return
 	}
-	
+
 	//get token from query params
 	token := r.URL.Query().Get("token")
 
@@ -387,10 +386,9 @@ func resetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := credentials.Email;
-	username := credentials.Username;
+	email := credentials.Email
+	username := credentials.Username
 	password := credentials.Password
-
 
 	var exists bool
 	//check if the token exists under the specified username
@@ -404,7 +402,6 @@ func resetPassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, errors.New("token doesnt exist").Error(), http.StatusConflict)
 		return
 	}
-
 
 	//hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -423,7 +420,5 @@ func resetPassword(w http.ResponseWriter, r *http.Request) {
 
 	//put the user in the redis cache to invalidate all current sessions
 
-
 	return
 }
-

@@ -1,38 +1,39 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
-	"log"
-	"net/http"
-	"time"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"database/sql"
+	"log"
+	"net/http"
 	"strconv"
+	"time"
 )
 
-
 func RegisterRoutes(router *mux.Router) error {
-	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet)
-	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet)
-	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost)
-	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete)
+	router.HandleFunc("/api/posts/{startIndex}", getFeed).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/posts/{uuid}/{startIndex}", getPosts).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/posts/create", createPost).Methods(http.MethodPost, http.MethodOptions)
+	router.HandleFunc("/api/posts/delete/{postID}", deletePost).Methods(http.MethodDelete, http.MethodOptions)
 
 	return nil
 }
 
-func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
+func getUUID(w http.ResponseWriter, r *http.Request) (uuid string) {
 	cookie, err := r.Cookie("access_token")
 	if err != nil {
-		http.Error(w, errors.New("error obtaining cookie: " + err.Error()).Error(), http.StatusBadRequest)
+		http.Error(w, errors.New("error obtaining cookie: "+err.Error()).Error(), http.StatusBadRequest)
 		log.Print(err.Error())
+		return ""
 	}
 	//validate the cookie
 	claims, err := ValidateToken(cookie.Value)
 	if err != nil {
-		http.Error(w, errors.New("error validating token: " + err.Error()).Error(), http.StatusUnauthorized)
+		http.Error(w, errors.New("error validating token: "+err.Error()).Error(), http.StatusUnauthorized)
 		log.Print(err.Error())
+		return ""
 	}
 	log.Println(claims)
 
@@ -40,16 +41,15 @@ func getUUID (w http.ResponseWriter, r *http.Request) (uuid string) {
 }
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
-
 	uuid := mux.Vars(r)["uuid"]
 	startIndex := mux.Vars(r)["startIndex"]
-  	//check auth
+	//check auth
 	isAuthorized := (getUUID(w, r) == uuid)
 	if !isAuthorized {
 		http.Error(w, errors.New("Not authorized to get posts").Error(), http.StatusUnauthorized)
-		return;
+		return
 	}
-  	//fetch public vs private depending on if user is accessing own profile
+	//fetch public vs private depending on if user is accessing own profile
 	var posts *sql.Rows
 	var err error
 	posts, err = DB.Query("SELECT * FROM posts WHERE authorID = ? ORDER BY postTime LIMIT ?, 25", uuid, startIndex)
@@ -58,9 +58,9 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 	}
 	var (
-		content string
-		postID string
-		userid string
+		content  string
+		postID   string
+		userid   string
 		postTime time.Time
 	)
 	numPosts := 0
@@ -68,10 +68,10 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 25 && posts.Next(); i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if err != nil {
-			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
+			http.Error(w, errors.New("Error scanning content: "+err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		postsArray[i] = Post{content, postID, userid, postTime, uuid}
+		postsArray[i] = Post{content, postID, userid, postTime}
 		numPosts++
 	}
 
@@ -81,9 +81,9 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-  //encode fetched data as json and serve to client
-  json.NewEncoder(w).Encode(postsArray[:numPosts])
-  return;
+	//encode fetched data as json and serve to client
+	json.NewEncoder(w).Encode(postsArray[:numPosts])
+	return
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +95,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.PostBody, postID, userID, time.Now().In(pst))
+	_, err = DB.Exec("INSERT INTO posts(content, postID, authorID, postTime) VALUES (?, ?, ?, ?)", post.Content, postID, userID, time.Now().In(pst))
 	if err != nil {
 		http.Error(w, errors.New("error storing post into database").Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
@@ -151,16 +151,16 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 	}
 	//fetch cookie
 	uuid := getUUID(w, r)
-  //fetch public vs private depending on if user is accessing own profile
+	//fetch public vs private depending on if user is accessing own profile
 	posts, err := DB.Query("SELECT * FROM posts WHERE authorID <> ? ORDER BY postTime LIMIT ?, 25", uuid, intStartIndex)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
 	var (
-		content string
-		postID string
-		userid string
+		content  string
+		postID   string
+		userid   string
 		postTime time.Time
 	)
 	numPosts := 0
@@ -168,10 +168,10 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 25 && posts.Next(); i++ {
 		err = posts.Scan(&content, &postID, &userid, &postTime)
 		if err != nil {
-			http.Error(w, errors.New("Error scanning content: " + err.Error()).Error(), http.StatusInternalServerError)
+			http.Error(w, errors.New("Error scanning content: "+err.Error()).Error(), http.StatusInternalServerError)
 			log.Print(err.Error())
 		}
-		postsArray[i] = Post{content, postID, userid, postTime, uuid}
+		postsArray[i] = Post{content, postID, userid, postTime}
 		numPosts++
 	}
 
@@ -180,6 +180,6 @@ func getFeed(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
-  //encode fetched data as json and serve to client
-  json.NewEncoder(w).Encode(postsArray[:numPosts])
+	//encode fetched data as json and serve to client
+	json.NewEncoder(w).Encode(postsArray[:numPosts])
 }

@@ -1,6 +1,6 @@
 import React, { useState }  from 'react';
 import { Button, Form } from 'react-bootstrap';
-import { request } from '../common/utils.js';
+import { request, HOST } from '../common/utils.js';
 import swal from 'sweetalert';
 
 function Signin(props) {
@@ -10,14 +10,23 @@ function Signin(props) {
 
   const send = (e) => {
     e.preventDefault();
-    request('POST', 'http://localhost:80/api/auth/signin', {}, JSON.stringify({ username, password }))
+    request('POST', `http://${HOST}:80/api/auth/signin`, {}, JSON.stringify({ username, password }))
       .then((res) => {
         console.log(res.status);
+        request('POST', `http://${HOST}:83/api/friends`, {}, "")
+          .then((res) => {
+            console.log(res.status);
+          })
+          .catch((res) => {
+            console.log("friend err: ", res);
+          });
         swal({
           title: "Signed in!",
           text: "You've successfully logged in!",
           icon: "success",
           timeout: 5000
+        }).then(() => {
+          window.location.href = '/';
         });
       })
       .catch((res) => {
