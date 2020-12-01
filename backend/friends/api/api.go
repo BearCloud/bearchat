@@ -149,7 +149,7 @@ func addUser (w http.ResponseWriter, r *http.Request) {
 // }
 
 func makeNeptuneRequest(gremlinQuery string) (map[string]interface{}, error) {
-	var req_body map[string]string
+	req_body := make(map[string]string)
 	req_body["gremlin"] = gremlinQuery
 	jsonValue, _ := json.Marshal(req_body)
 	resp, err := http.Post(NeptuneURL, "application/json", bytes.NewBuffer(jsonValue))
@@ -157,7 +157,7 @@ func makeNeptuneRequest(gremlinQuery string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var response map[string]interface{}
+	response := make(map[string]interface{})
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, err
