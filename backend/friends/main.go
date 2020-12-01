@@ -15,6 +15,7 @@ func main() {
 	// Create a new mux for routing api calls
 	router := mux.NewRouter()
 	router.Use(CORS)
+	
 	err := api.RegisterRoutes(router)
 	if err != nil {
 		log.Fatal("Error registering API endpoints")
@@ -27,9 +28,10 @@ func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// Set headers
-		w.Header().Set("Access-Control-Allow-Headers:", "Content-Type")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Origin", "http://54.173.4.200:3000")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)

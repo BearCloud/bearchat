@@ -12,12 +12,12 @@ import (
 const NeptuneURL = "https://database-2.cluster-cfqqv4t1qo18.us-east-1.neptune.amazonaws.com:8182/gremlin"
 
 func RegisterRoutes(router *mux.Router) error {
-	router.HandleFunc("/api/friends/{uuid}", areFriends).Methods(http.MethodGet)
-	router.HandleFunc("/api/friends/{uuid}", addFriend).Methods(http.MethodPost)
+	router.HandleFunc("/api/friends/{uuid}", areFriends).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/friends/{uuid}", addFriend).Methods(http.MethodPost, http.MethodOptions)
 	// router.HandleFunc("/api/friends/{uuid}", deleteFriend).Methods(http.MethodDelete)
 	// router.HandleFunc("/api/friends/{uuid}/mutual", mutualFriends).Methods(http.MethodGet)
-	router.HandleFunc("/api/friends", getFriends).Methods(http.MethodGet)
-	router.HandleFunc("/api/friends", addUser).Methods(http.MethodPost)
+	router.HandleFunc("/api/friends", getFriends).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/friends", addUser).Methods(http.MethodPost, http.MethodOptions)
 
 	return nil
 }
