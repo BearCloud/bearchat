@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-const NeptuneURL = "http://database-1.cluster-cfqqv4t1qo18.us-east-1.neptune.amazonaws.com:8182/gremlin"
+const NeptuneURL = "https://database-1.cluster-cfqqv4t1qo18.us-east-1.neptune.amazonaws.com:8182/gremlin"
 
 func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/friends/{uuid}", areFriends).Methods(http.MethodGet)
@@ -63,15 +63,9 @@ func getFriends (w http.ResponseWriter, r *http.Request) {
 
 	result := response["result"].(map[string]interface{})
 	data := result["data"].(map[string]interface{})
-	values := data["@value"].([]map[string]interface{})
-	
-	var friends []string
-	for _, value := range values {
-		uuid = value["value"].(string)
-		friends = append(friends, uuid)
-	}
+	values := data["@value"].([]interface{})
 
-	json.NewEncoder(w).Encode(friends)
+	json.NewEncoder(w).Encode(values)
 	return
 }
 
@@ -105,6 +99,13 @@ func addFriend(w http.ResponseWriter, r *http.Request) {
 	otherUUID := mux.Vars(r)["uuid"]
 	uuid := getUUID(w, r)
 	gq := "g.addE('friends with').from(g.V().has('uuid', '" + uuid + "')).to(g.V().has('uuid', '" + otherUUID + "'))"
+	_, err := makeNeptuneRequest(gq)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	gq = "g.addE('friends with').from(g.V().has('uuid', '" + otherUUID + "')).to(g.V().has('uuid', '" + uuid + "'))"
 	_, err := makeNeptuneRequest(gq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -153,10 +154,10 @@ func makeNeptuneRequest(gremlinQuery string) (map[string]interface{}, error) {
 	req_body["gremlin"] = gremlinQuery
 	jsonValue, _ := json.Marshal(req_body)
 	resp, err := http.Post(NeptuneURL, "application/json", bytes.NewBuffer(jsonValue))
-	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	response := make(map[string]interface{})
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
