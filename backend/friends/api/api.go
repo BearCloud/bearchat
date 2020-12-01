@@ -6,6 +6,7 @@ import (
 	"log"
 	"bytes"
 	"encoding/json"
+	"fmt"
 )
 
 const NeptuneURL = "http://database-1.cluster-cfqqv4t1qo18.us-east-1.neptune.amazonaws.com:8182/gremlin"
@@ -66,12 +67,38 @@ func getFriends (w http.ResponseWriter, r *http.Request) {
 	
 	var friends []string
 	for _, value := range values {
-		uuid = value["@Value"].(string)
+		uuid = value["value"].(string)
 		friends = append(friends, uuid)
 	}
 
 	json.NewEncoder(w).Encode(friends)
 	return
+}
+
+func areFriends(w http.ResponseWriter, r *http.Request) {
+	otherUUID := mux.Vars(r)["uuid"]
+	uuid := getUUID(w, r)
+	gq := "g.V().has('uuid', '" + uuid + "').outE('friends with').where(otherV().has('uuid', '" + otherUUID + "')).count()"
+	response, err := makeNeptuneRequest(gq)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	result := response["result"].(map[string]interface{})
+	data := result["data"].(map[string]interface{})
+	value := data["@value"].([]map[string]interface{})
+
+	edges := value[0]["@value"].(int64)
+
+	if edges < 1 {
+		fmt.Fprint(w, false)
+	} else {
+		fmt.Fprint(w, true)
+	}
+
+	return
+
 }
 
 func addFriend(w http.ResponseWriter, r *http.Request) {
@@ -96,18 +123,6 @@ func addUser (w http.ResponseWriter, r *http.Request) {
 	}
 	
 	return
-}
-
-func areFriends(w http.ResponseWriter, r *http.Request) {
-	otherUUID := mux.Vars(r)["uuid"]
-	uuid := getUUID(w, r)
-	gq := "g.V().has('uuid', '" + uuid + "').out('friends with').where(otherV().has('uuid', '" + otherUUID + "')).count()"
-	_, err := makeNeptuneRequest(gq)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 }
 
 // func deleteFriend(w http.ResponseWriter, r *http.Request) {
