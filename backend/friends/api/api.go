@@ -81,9 +81,9 @@ func areFriends(w http.ResponseWriter, r *http.Request) {
 
 	result := response["result"].(map[string]interface{})
 	data := result["data"].(map[string]interface{})
-	value := data["@value"].([]map[string]interface{})
-
-	edges := value[0]["@value"].(int64)
+	values := data["@value"].([]interface{})
+	value := values[0].(map[string]interface{})
+	edges := value["@value"].(float64)
 
 	if edges < 1 {
 		fmt.Fprint(w, false)
