@@ -15,6 +15,13 @@ function Signup(props) {
     request('POST', `http://${HOST}:80/api/auth/signup`, {}, JSON.stringify({ email: email, username: username, password: password }))
       .then((res) => {
         console.log(res.status);
+        request('POST', `http://${HOST}:83/api/friends`, {}, "")
+          .then((res) => {
+            console.log(res.status);
+          })
+          .catch((res) => {
+            console.log("friend err: ", res);
+          });
         swal({
           title: "Signed up!",
           text: "You've successfully signed up. Go ahead and log in!",

@@ -13,13 +13,6 @@ function Signin(props) {
     request('POST', `http://${HOST}:80/api/auth/signin`, {}, JSON.stringify({ username, password }))
       .then((res) => {
         console.log(res.status);
-        request('POST', `http://${HOST}:83/api/friends`, {}, "")
-          .then((res) => {
-            console.log(res.status);
-          })
-          .catch((res) => {
-            console.log("friend err: ", res);
-          });
         swal({
           title: "Signed in!",
           text: "You've successfully logged in!",

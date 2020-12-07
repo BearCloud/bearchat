@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-const NeptuneURL = "https://database-2.cluster-cfqqv4t1qo18.us-east-1.neptune.amazonaws.com:8182/gremlin"
+const NeptuneURL = "https://database-1.cluster-cfqqv4t1qo18.us-east-1.neptune.amazonaws.com:8182/gremlin"
 
 func RegisterRoutes(router *mux.Router) error {
 	router.HandleFunc("/api/friends/{uuid}", areFriends).Methods(http.MethodGet, http.MethodOptions)
