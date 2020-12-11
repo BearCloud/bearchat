@@ -42,5 +42,5 @@ export function request(method, url, qs, body) {
   });
 }
 
-export const HOST = "35.170.182.110";
+export const HOST = "<EC2 IP>";
 

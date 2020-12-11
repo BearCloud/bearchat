@@ -26,7 +26,7 @@ function Signin(props) {
         console.log("err: ", res);
         swal({
           title: "Could not sign in!",
-          text: `Error when attempting to sign in (HTTP ${res.status}): ${res.responseText.trim()}.`,
+          text: `Error when attempting to sign in (HTTP ${res.status}): ${res?.responseText?.trim()}.`,
           icon: "error"
         });
       });

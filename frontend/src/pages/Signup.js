@@ -34,7 +34,7 @@ function Signup(props) {
         console.log("err: ", res);
         swal({
           title: "Could not sign up!",
-          text: `Error when attempting to sign up (HTTP ${res.status}): ${res.responseText.trim()}.`,
+          text: `Error when attempting to sign up (HTTP ${res.status}): ${res?.responseText?.trim()}.`,
           icon: "error"
         });
       });
